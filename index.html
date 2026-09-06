@@ -203,7 +203,102 @@
             .tw { opacity: 1 !important; transform: none !important; }
         }
 
-        /* ===== 卡片基础 ===== */
+        
+        /* ===== 我的歌单 ===== */
+        #playlist { background: linear-gradient(180deg, rgba(15,23,42,0) 0%, rgba(15,23,42,.4) 50%, rgba(15,23,42,0) 100%); }
+        .playlist-desc { color: var(--text-sec); font-size: .98rem; margin-top: -32px; margin-bottom: 40px; max-width: 600px; line-height: 1.7; }
+        .playlist-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+        .playlist-card {
+            display: block; text-decoration: none; color: inherit;
+            background: var(--surface-1); border: 1px solid var(--border);
+            border-radius: var(--r); overflow: hidden;
+            transition: var(--tr); position: relative;
+        }
+        .playlist-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 50px rgba(56,189,248,.15), 0 0 30px rgba(56,189,248,.08);
+            border-color: var(--neon);
+        }
+        .playlist-cover {
+            width: 100%; aspect-ratio: 1 / 1;
+            background-size: cover; background-position: center;
+            position: relative;
+            /* fallback gradients if image fails */
+            background-color: #1a1a2e;
+        }
+        .playlist-cover:nth-child(1) { background-color: #1a1a2e; }
+        .playlist-play-overlay {
+            position: absolute; inset: 0;
+            background: rgba(0,0,0,.35);
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity .35s ease;
+        }
+        .playlist-card:hover .playlist-play-overlay { opacity: 1; }
+        .playlist-play-icon {
+            width: 52px; height: 52px; border-radius: 50%;
+            background: rgba(56,189,248,.9); color: #0f172a;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; padding-left: 3px;
+            box-shadow: 0 0 20px rgba(56,189,248,.5);
+            transform: scale(.8); transition: transform .35s cubic-bezier(.4,0,.2,1);
+        }
+        .playlist-card:hover .playlist-play-icon { transform: scale(1); }
+        .playlist-info { padding: 16px 18px 18px; text-align: center; }
+        .playlist-song { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .playlist-artist { font-size: .85rem; color: var(--text-mute); }
+        @media (max-width: 760px) {
+            .playlist-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; }
+            .playlist-info { padding: 10px 10px 14px; }
+            .playlist-song { font-size: .88rem; }
+            .playlist-artist { font-size: .76rem; }
+            .playlist-play-icon { width: 40px; height: 40px; font-size: 1rem; }
+        }
+        @media (max-width: 480px) {
+            .playlist-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        }
+
+
+        /* ===== 音乐播放器弹层 ===== */
+        .music-modal {
+            position: fixed; inset: 0; z-index: 9999;
+            background: rgba(2,6,23,.78); backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; visibility: hidden; transition: opacity .3s ease, visibility .3s ease;
+            padding: 20px;
+        }
+        .music-modal.open { opacity: 1; visibility: visible; }
+        .music-modal-box {
+            width: 100%; max-width: 420px;
+            background: var(--surface-1); border: 1px solid var(--border);
+            border-radius: var(--r); overflow: hidden;
+            box-shadow: 0 30px 80px rgba(0,0,0,.6), 0 0 40px rgba(56,189,248,.12);
+            transform: translateY(20px) scale(.96); transition: transform .35s cubic-bezier(.4,0,.2,1);
+        }
+        .music-modal.open .music-modal-box { transform: none; }
+        .music-modal-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 18px; border-bottom: 1px solid var(--border);
+            background: linear-gradient(135deg, rgba(56,189,248,.08), rgba(245,158,11,.04));
+        }
+        .music-modal-title {
+            font-size: .95rem; font-weight: 700; color: var(--text);
+            background: linear-gradient(135deg, var(--neon), var(--gold));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .music-modal-close {
+            width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border);
+            background: var(--surface-2); color: var(--text-sec); cursor: pointer;
+            font-size: .9rem; line-height: 1; transition: var(--tr);
+        }
+        .music-modal-close:hover { color: #fff; border-color: var(--neon); background: var(--neon-dim); }
+        .music-modal-frame-wrap { padding: 0; line-height: 0; }
+        .music-modal-frame { width: 100%; height: 90px; border: 0; display: block; }
+        @media (max-width: 480px) {
+            .music-modal { padding: 12px; }
+            .music-modal-box { max-width: 100%; }
+        }
+
+/* ===== 卡片基础 ===== */
         .card {
             background: var(--surface-1);
             border-radius: var(--r);
@@ -1235,6 +1330,76 @@
     </div>
 </section>
 
+<!-- 我的歌单 -->
+<section id="playlist">
+    <div class="container">
+        <div class="section-title reveal">
+            <span class="icon">&#127925;</span>
+            <span class="text">我的歌单</span>
+        </div>
+        <p class="playlist-desc reveal">耳机里的世界 —— 四首陪我走过不同心情的歌，点击封面即可在页面内收听</p>
+        <div class="playlist-grid">
+            <div class="playlist-card reveal" data-song-id="29761224" data-song-name="泡沫" title="点击播放《泡沫》">
+                <div class="playlist-cover" style="background-image:url('song-paomo.jpg')">
+                    <div class="playlist-play-overlay">
+                        <span class="playlist-play-icon">&#9654;</span>
+                    </div>
+                </div>
+                <div class="playlist-info">
+                    <div class="playlist-song">泡沫</div>
+                    <div class="playlist-artist">G.E.M. 邓紫棋</div>
+                </div>
+            </div>
+            <div class="playlist-card reveal" data-song-id="1450774557" data-song-name="句号" title="点击播放《句号》">
+                <div class="playlist-cover" style="background-image:url('song-juhao.jpg')">
+                    <div class="playlist-play-overlay">
+                        <span class="playlist-play-icon">&#9654;</span>
+                    </div>
+                </div>
+                <div class="playlist-info">
+                    <div class="playlist-song">句号</div>
+                    <div class="playlist-artist">G.E.M. 邓紫棋</div>
+                </div>
+            </div>
+            <div class="playlist-card reveal" data-song-id="536551119" data-song-name="戒烟" title="点击播放《戒烟》">
+                <div class="playlist-cover" style="background-image:url('song-jieyan.jpg')">
+                    <div class="playlist-play-overlay">
+                        <span class="playlist-play-icon">&#9654;</span>
+                    </div>
+                </div>
+                <div class="playlist-info">
+                    <div class="playlist-song">戒烟</div>
+                    <div class="playlist-artist">李荣浩</div>
+                </div>
+            </div>
+            <div class="playlist-card reveal" data-song-id="30612793" data-song-name="多远都要在一起" title="点击播放《多远都要在一起》">
+                <div class="playlist-cover" style="background-image:url('song-duoyuan.jpg')">
+                    <div class="playlist-play-overlay">
+                        <span class="playlist-play-icon">&#9654;</span>
+                    </div>
+                </div>
+                <div class="playlist-info">
+                    <div class="playlist-song">多远都要在一起</div>
+                    <div class="playlist-artist">G.E.M. 邓紫棋</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 音乐播放器弹层 -->
+<div id="musicPlayer" class="music-modal" aria-hidden="true">
+    <div class="music-modal-box">
+        <div class="music-modal-bar">
+            <span class="music-modal-title" id="musicModalTitle">♪ 正在播放</span>
+            <button class="music-modal-close" id="musicModalClose" aria-label="关闭">✕</button>
+        </div>
+        <div class="music-modal-frame-wrap">
+            <iframe class="music-modal-frame" id="musicModalFrame" frameborder="0" scrolling="no" src=""></iframe>
+        </div>
+    </div>
+</div>
+
 <!-- 证书 -->
 <section id="certs">
     <div class="container">
@@ -2084,7 +2249,35 @@
         for (let i = 0; i < N; i++) { const a = -Math.PI / 2 + i / N * Math.PI * 2; const r = R * axes[i].v / 100; const x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r; ctx.beginPath(); ctx.arc(x, y, 3, 0, 6.2832); ctx.fillStyle = "#22d3ee"; ctx.fill(); }
     }
     // ===== 初始化 =====
+    function initMusicPlayer() {
+        const modal = document.getElementById('musicPlayer');
+        const frame = document.getElementById('musicModalFrame');
+        const title = document.getElementById('musicModalTitle');
+        const closeBtn = document.getElementById('musicModalClose');
+        if (!modal || !frame) return;
+        const openPlayer = (id, name) => {
+            title.textContent = '♪ 正在播放：' + name;
+            frame.src = 'https://music.163.com/outchain/player?type=2&id=' + id + '&auto=1&height=90';
+            modal.classList.add('open');
+            modal.setAttribute('aria-hidden', 'false');
+        };
+        const closePlayer = () => {
+            modal.classList.remove('open');
+            modal.setAttribute('aria-hidden', 'true');
+            frame.src = '';
+        };
+        document.querySelectorAll('.playlist-card').forEach(card => {
+            card.addEventListener('click', () => {
+                openPlayer(card.dataset.songId, card.dataset.songName);
+            });
+        });
+        closeBtn.addEventListener('click', closePlayer);
+        modal.addEventListener('click', (e) => { if (e.target === modal) closePlayer(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePlayer(); });
+    }
+
     function init() {
+        initMusicPlayer();
         renderCerts();
         observeReveal();
         initParticles();
