@@ -213,9 +213,9 @@
             mask-image: linear-gradient(90deg, transparent 0%, black 6%, black 94%, transparent 100%);
         }
         .playlist-scroll-inner {
-            display: flex; flex-direction: row; gap: 16px;
+            display: flex; flex-direction: row; gap: 20px;
             width: max-content;
-            animation: plScrollLeft 45s linear infinite;
+            animation: plScrollLeft 65s linear infinite;
         }
         .playlist-scroll:hover .playlist-scroll-inner { animation-play-state: paused; }
         @keyframes plScrollLeft {
@@ -223,51 +223,37 @@
             100% { transform: translateX(-50%); }
         }
         .playlist-row {
-            display: flex; align-items: center; gap: 12px;
-            padding: 10px 16px; border-radius: 14px;
-            background: var(--surface-1); border: 1px solid var(--border);
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+            padding: 10px; border-radius: 14px;
             cursor: pointer; transition: var(--tr);
             flex-shrink: 0;
+            width: 120px;
         }
         .playlist-row:hover {
-            border-color: var(--neon);
-            box-shadow: 0 0 20px rgba(56,189,248,.12), 0 8px 30px var(--shadow);
-            transform: translateY(-3px);
+            transform: translateY(-4px);
+        }
+        .playlist-row:hover .playlist-row-img {
+            box-shadow: 0 8px 28px rgba(56,189,248,.25), 0 0 20px rgba(56,189,248,.12);
         }
         .playlist-row-img {
-            width: 56px; height: 56px; border-radius: 12px;
+            width: 110px; height: 110px; border-radius: 14px;
             object-fit: cover; flex-shrink: 0;
             background: #1a1a2e;
-        }
-        .playlist-row-info { min-width: 0; }
-        .playlist-row-name {
-            font-size: .92rem; font-weight: 700; color: var(--text);
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            max-width: 150px;
-        }
-        .playlist-row-artist {
-            font-size: .78rem; color: var(--text-mute);
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            max-width: 150px;
-        }
-        .playlist-row-play {
-            width: 32px; height: 32px; border-radius: 50%;
-            background: rgba(56,189,248,.15); color: var(--neon);
-            display: flex; align-items: center; justify-content: center;
-            font-size: .75rem; flex-shrink: 0;
-            border: 1px solid rgba(56,189,248,.3);
             transition: var(--tr);
+            box-shadow: 0 4px 16px rgba(0,0,0,.4);
         }
-        .playlist-row:hover .playlist-row-play {
-            background: var(--neon); color: #0f172a;
+        .playlist-row-name {
+            font-size: .85rem; font-weight: 600; color: var(--text);
+            text-align: center;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            max-width: 110px;
         }
+        .playlist-row-info, .playlist-row-artist, .playlist-row-play { display: none; }
         @media (max-width: 760px) {
-            .playlist-scroll-inner { gap: 10px; animation-duration: 30s; }
-            .playlist-row { padding: 8px 12px; gap: 10px; border-radius: 12px; }
-            .playlist-row-img { width: 48px; height: 48px; border-radius: 10px; }
-            .playlist-row-name { font-size: .82rem; max-width: 110px; }
-            .playlist-row-artist { font-size: .7rem; max-width: 110px; }
-            .playlist-row-play { width: 28px; height: 28px; font-size: .7rem; }
+            .playlist-scroll-inner { gap: 14px; animation-duration: 45s; }
+            .playlist-row { padding: 8px; width: 100px; }
+            .playlist-row-img { width: 90px; height: 90px; border-radius: 12px; }
+            .playlist-row-name { font-size: .78rem; max-width: 90px; }
         }
         @media (prefers-reduced-motion: reduce) {
             .playlist-scroll-inner { animation: none; }
@@ -1410,123 +1396,63 @@
             <div class="playlist-scroll-inner" id="playlistInner">
                     <div class="playlist-row" data-song-id="233931" data-file="paomo" data-song-name="泡沫" title="点击播放《泡沫》">
                         <img class="playlist-row-img" src="song-paomo.jpg" alt="泡沫">
-                        <div class="playlist-row-info">
-                            <div class="playlist-row-name">泡沫</div>
-                            <div class="playlist-row-artist">G.E.M. 邓紫棋</div>
-                        </div>
-                        <div class="playlist-row-play">&#9654;</div>
+                        <div class="playlist-row-name">泡沫</div>
                     </div>
                     <div class="playlist-row" data-song-id="1405283464" data-file="juhao" data-song-name="句号" title="点击播放《句号》">
                         <img class="playlist-row-img" src="song-juhao.jpg" alt="句号">
-                        <div class="playlist-row-info">
-                            <div class="playlist-row-name">句号</div>
-                            <div class="playlist-row-artist">G.E.M. 邓紫棋</div>
-                        </div>
-                        <div class="playlist-row-play">&#9654;</div>
+                        <div class="playlist-row-name">句号</div>
                     </div>
                     <div class="playlist-row" data-song-id="518686034" data-file="jieyan" data-song-name="戒烟" title="点击播放《戒烟》">
                         <img class="playlist-row-img" src="song-jieyan.jpg" alt="戒烟">
-                        <div class="playlist-row-info">
-                            <div class="playlist-row-name">戒烟</div>
-                            <div class="playlist-row-artist">李荣浩</div>
-                        </div>
-                        <div class="playlist-row-play">&#9654;</div>
+                        <div class="playlist-row-name">戒烟</div>
                     </div>
                     <div class="playlist-row" data-song-id="30612793" data-file="duoyuan" data-song-name="多远都要在一起" title="点击播放《多远都要在一起》">
                         <img class="playlist-row-img" src="song-duoyuan.jpg" alt="多远都要在一起">
-                        <div class="playlist-row-info">
-                            <div class="playlist-row-name">多远都要在一起</div>
-                            <div class="playlist-row-artist">G.E.M. 邓紫棋</div>
-                        </div>
-                        <div class="playlist-row-play">&#9654;</div>
+                        <div class="playlist-row-name">多远都要在一起</div>
                     </div>
                     <div class="playlist-row" data-song-id="863481092" data-file="tanyunxi" data-song-name="叹云兮" title="点击播放《叹云兮》">
                         <img class="playlist-row-img" src="song-tanyunxi.jpg" alt="叹云兮">
-                        <div class="playlist-row-info">
-                            <div class="playlist-row-name">叹云兮</div>
-                            <div class="playlist-row-artist">鞠婧祎</div>
-                        </div>
-                        <div class="playlist-row-play">&#9654;</div>
+                        <div class="playlist-row-name">叹云兮</div>
                     </div>
                     <div class="playlist-row" data-song-id="156915" data-file="nuowei" data-song-name="挪威的森林" title="点击播放《挪威的森林》">
                         <img class="playlist-row-img" src="song-nuowei.jpg" alt="挪威的森林">
-                        <div class="playlist-row-info">
-                            <div class="playlist-row-name">挪威的森林</div>
-                            <div class="playlist-row-artist">伍佰</div>
-                        </div>
-                        <div class="playlist-row-play">&#9654;</div>
+                        <div class="playlist-row-name">挪威的森林</div>
                     </div>
                     <div class="playlist-row" data-song-id="1969494998" data-file="damian" data-song-name="大眠" title="点击播放《大眠》">
                         <img class="playlist-row-img" src="song-damian.jpg" alt="大眠">
-                        <div class="playlist-row-info">
-                            <div class="playlist-row-name">大眠</div>
-                            <div class="playlist-row-artist">王心凌</div>
-                        </div>
-                        <div class="playlist-row-play">&#9654;</div>
+                        <div class="playlist-row-name">大眠</div>
                     </div>
                     <div class="playlist-row" data-song-id="449818741" data-file="guangnian" data-song-name="光年之外" title="点击播放《光年之外》">
                         <img class="playlist-row-img" src="song-guangnian.jpg" alt="光年之外">
-                        <div class="playlist-row-info">
-                            <div class="playlist-row-name">光年之外</div>
-                            <div class="playlist-row-artist">G.E.M. 邓紫棋</div>
-                        </div>
-                        <div class="playlist-row-play">&#9654;</div>
+                        <div class="playlist-row-name">光年之外</div>
                     </div>
                     <div class="playlist-row" data-song-id="2083785152" data-file="weiyi" data-song-name="唯一" title="点击播放《唯一》">
                         <img class="playlist-row-img" src="song-weiyi.jpg" alt="唯一">
-                        <div class="playlist-row-info">
-                            <div class="playlist-row-name">唯一</div>
-                            <div class="playlist-row-artist">G.E.M. 邓紫棋</div>
-                        </div>
-                        <div class="playlist-row-play">&#9654;</div>
+                        <div class="playlist-row-name">唯一</div>
                     </div>
                     <div class="playlist-row" data-song-id="2151787555" data-file="shuangxue" data-song-name="霜雪千年" title="点击播放《霜雪千年》">
                         <img class="playlist-row-img" src="song-shuangxue.jpg" alt="霜雪千年">
-                        <div class="playlist-row-info">
-                            <div class="playlist-row-name">霜雪千年</div>
-                            <div class="playlist-row-artist">洛天依</div>
-                        </div>
-                        <div class="playlist-row-play">&#9654;</div>
+                        <div class="playlist-row-name">霜雪千年</div>
                     </div>
                     <div class="playlist-row" data-song-id="1294951288" data-file="su" data-song-name="溯 (Reverse)" title="点击播放《溯 (Reverse)》">
                         <img class="playlist-row-img" src="song-su.jpg" alt="溯 (Reverse)">
-                        <div class="playlist-row-info">
-                            <div class="playlist-row-name">溯 (Reverse)</div>
-                            <div class="playlist-row-artist">CORSAK胡梦周 / 马吟吟</div>
-                        </div>
-                        <div class="playlist-row-play">&#9654;</div>
+                        <div class="playlist-row-name">溯 (Reverse)</div>
                     </div>
                     <div class="playlist-row" data-song-id="2098595826" data-file="ivorytower" data-song-name="IVORY TOWER" title="点击播放《IVORY TOWER》">
                         <img class="playlist-row-img" src="song-ivorytower.jpg" alt="IVORY TOWER">
-                        <div class="playlist-row-info">
-                            <div class="playlist-row-name">IVORY TOWER</div>
-                            <div class="playlist-row-artist">泽野弘之 / SennaRin</div>
-                        </div>
-                        <div class="playlist-row-play">&#9654;</div>
+                        <div class="playlist-row-name">IVORY TOWER</div>
                     </div>
                     <div class="playlist-row" data-song-id="1417862046" data-file="yiyu" data-song-name="呓语" title="点击播放《呓语》">
                         <img class="playlist-row-img" src="song-yiyu.jpg" alt="呓语">
-                        <div class="playlist-row-info">
-                            <div class="playlist-row-name">呓语</div>
-                            <div class="playlist-row-artist">毛不易</div>
-                        </div>
-                        <div class="playlist-row-play">&#9654;</div>
+                        <div class="playlist-row-name">呓语</div>
                     </div>
                     <div class="playlist-row" data-song-id="1831424992" data-file="xiatian" data-song-name="夏天的风 (DJ版)" title="点击播放《夏天的风 (DJ版)》">
                         <img class="playlist-row-img" src="song-xiatian.jpg" alt="夏天的风 (DJ版)">
-                        <div class="playlist-row-info">
-                            <div class="playlist-row-name">夏天的风 (DJ版)</div>
-                            <div class="playlist-row-artist">DJ二毛</div>
-                        </div>
-                        <div class="playlist-row-play">&#9654;</div>
+                        <div class="playlist-row-name">夏天的风 (DJ版)</div>
                     </div>
                     <div class="playlist-row" data-song-id="1941629582" data-file="youwo" data-song-name="有我" title="点击播放《有我》">
                         <img class="playlist-row-img" src="song-youwo.jpg" alt="有我">
-                        <div class="playlist-row-info">
-                            <div class="playlist-row-name">有我</div>
-                            <div class="playlist-row-artist">周深</div>
-                        </div>
-                        <div class="playlist-row-play">&#9654;</div>
+                        <div class="playlist-row-name">有我</div>
                     </div>
             </div>
         </div>
