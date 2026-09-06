@@ -292,7 +292,7 @@
         }
         .music-modal-close:hover { color: #fff; border-color: var(--neon); background: var(--neon-dim); }
         .music-modal-frame-wrap { padding: 0; line-height: 0; }
-        .music-modal-frame { width: 100%; height: 90px; border: 0; display: block; }
+        .music-modal-audio { width: 100%; display: block; padding: 16px 18px; box-sizing: border-box; background: var(--surface-1); }
         @media (max-width: 480px) {
             .music-modal { padding: 12px; }
             .music-modal-box { max-width: 100%; }
@@ -1339,7 +1339,7 @@
         </div>
         <p class="playlist-desc reveal">耳机里的世界 —— 四首陪我走过不同心情的歌，点击封面即可在页面内收听</p>
         <div class="playlist-grid">
-            <div class="playlist-card reveal" data-song-id="29761224" data-song-name="泡沫" title="点击播放《泡沫》">
+            <div class="playlist-card reveal" data-song-id="233931" data-file="paomo" data-song-name="泡沫" title="点击播放《泡沫》">
                 <div class="playlist-cover" style="background-image:url('song-paomo.jpg')">
                     <div class="playlist-play-overlay">
                         <span class="playlist-play-icon">&#9654;</span>
@@ -1350,7 +1350,7 @@
                     <div class="playlist-artist">G.E.M. 邓紫棋</div>
                 </div>
             </div>
-            <div class="playlist-card reveal" data-song-id="1450774557" data-song-name="句号" title="点击播放《句号》">
+            <div class="playlist-card reveal" data-song-id="1405283464" data-file="juhao" data-song-name="句号" title="点击播放《句号》">
                 <div class="playlist-cover" style="background-image:url('song-juhao.jpg')">
                     <div class="playlist-play-overlay">
                         <span class="playlist-play-icon">&#9654;</span>
@@ -1361,7 +1361,7 @@
                     <div class="playlist-artist">G.E.M. 邓紫棋</div>
                 </div>
             </div>
-            <div class="playlist-card reveal" data-song-id="536551119" data-song-name="戒烟" title="点击播放《戒烟》">
+            <div class="playlist-card reveal" data-song-id="518686034" data-file="jieyan" data-song-name="戒烟" title="点击播放《戒烟》">
                 <div class="playlist-cover" style="background-image:url('song-jieyan.jpg')">
                     <div class="playlist-play-overlay">
                         <span class="playlist-play-icon">&#9654;</span>
@@ -1372,7 +1372,7 @@
                     <div class="playlist-artist">李荣浩</div>
                 </div>
             </div>
-            <div class="playlist-card reveal" data-song-id="30612793" data-song-name="多远都要在一起" title="点击播放《多远都要在一起》">
+            <div class="playlist-card reveal" data-song-id="30612793" data-file="duoyuan" data-song-name="多远都要在一起" title="点击播放《多远都要在一起》">
                 <div class="playlist-cover" style="background-image:url('song-duoyuan.jpg')">
                     <div class="playlist-play-overlay">
                         <span class="playlist-play-icon">&#9654;</span>
@@ -1395,7 +1395,7 @@
             <button class="music-modal-close" id="musicModalClose" aria-label="关闭">✕</button>
         </div>
         <div class="music-modal-frame-wrap">
-            <iframe class="music-modal-frame" id="musicModalFrame" frameborder="0" scrolling="no" src=""></iframe>
+            <audio id="musicModalAudio" class="music-modal-audio" controls preload="none"></audio>
         </div>
     </div>
 </div>
@@ -2251,24 +2251,25 @@
     // ===== 初始化 =====
     function initMusicPlayer() {
         const modal = document.getElementById('musicPlayer');
-        const frame = document.getElementById('musicModalFrame');
+        const audio = document.getElementById('musicModalAudio');
         const title = document.getElementById('musicModalTitle');
         const closeBtn = document.getElementById('musicModalClose');
-        if (!modal || !frame) return;
-        const openPlayer = (id, name) => {
+        if (!modal || !audio) return;
+        const openPlayer = (file, name) => {
             title.textContent = '♪ 正在播放：' + name;
-            frame.src = 'https://music.163.com/outchain/player?type=2&id=' + id + '&auto=1&height=90';
+            audio.src = 'song-' + file + '.mp3';
             modal.classList.add('open');
             modal.setAttribute('aria-hidden', 'false');
+            audio.play().catch(() => {});
         };
         const closePlayer = () => {
             modal.classList.remove('open');
             modal.setAttribute('aria-hidden', 'true');
-            frame.src = '';
+            try { audio.pause(); audio.currentTime = 0; audio.removeAttribute('src'); audio.load(); } catch (e) {}
         };
         document.querySelectorAll('.playlist-card').forEach(card => {
             card.addEventListener('click', () => {
-                openPlayer(card.dataset.songId, card.dataset.songName);
+                openPlayer(card.dataset.file, card.dataset.songName);
             });
         });
         closeBtn.addEventListener('click', closePlayer);
