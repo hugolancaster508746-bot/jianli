@@ -194,6 +194,13 @@
         .beyond-icon { font-size: 2rem; margin-bottom: 10px; }
         .beyond-card h4 { font-size: 1.05rem; margin: 0 0 6px; color: var(--text); }
         .beyond-card p { font-size: .85rem; color: var(--text-mute); margin: 0; }
+
+        /* ===== 个人优势 ===== */
+        .advantage { background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--r); padding: 28px 30px; position: relative; }
+        .advantage::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: linear-gradient(180deg, var(--neon), var(--gold)); }
+        .advantage-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 18px; }
+        .advantage-list li { padding-left: 14px; border-left: 3px solid var(--neon); line-height: 1.85; color: var(--text-sec); font-size: 1rem; }
+        .advantage-list li b { color: var(--text); margin-right: 4px; }
         @media (max-width: 760px) {
             .about-grid { grid-template-columns: 1fr; }
             .about-radar { order: -1; }
@@ -1037,6 +1044,25 @@
                 <div class="bento-label">认证与荣誉</div>
                 <div class="bento-desc">华为、阿里云等多项权威技术认证</div>
             </div>
+        </div>
+    </div>
+</section>
+
+<!-- 个人优势 -->
+<section id="advantage">
+    <div class="container">
+        <div class="section-title reveal">
+            <span class="icon">✨</span>
+            <span class="text">个人优势</span>
+        </div>
+        <div class="advantage reveal">
+            <ul class="advantage-list">
+                <li><b>能源动力 × AI 跨学科知识结构：</b>能源与动力工程创新班（大连理工 2026 级）本科背景，同步自学 AI 与编程，4 个月内拿下 12 项 AI 领域权威认证（科大讯飞 AI 大学堂、阿里达摩院、阿里云、Datawhale、华为等），具备「传统能源动力 + 前沿 AI」复合背景，可独立完成 AI 工具在能源场景的需求拆解与落地应用。</li>
+                <li><b>AI 原生工作流与工具敏锐度：</b>深度使用 Trae CN、ima、千问等 AI 工具贯穿编程、写作、PPT 制作全流程；可以运用剪映、PowerPoint、WPS 演示等完成成果交付；自学 HTML / CSS / JS 与 GitHub Pages 部署，独立搭建并上线个人品牌站（kill689.github.io）与多款 HTML 小游戏（坦克大战 / 飞机大战 / 手势宇宙漫游），具备极强效率意识与工具杠杆放大能力。</li>
+                <li><b>教学沟通与知识传递能力：</b>高中三年任学习委员，长期承担班级学业帮扶与知识点讲解工作；暑假期间 1v1 辅导妹妹预习高中课程，将复杂知识点转化为易理解的学习路径；具备良好的知识结构化表达与课堂组织能力，乐于把抽象概念讲明白。</li>
+                <li><b>强自驱力与快速迭代：</b>AI 零基础到拿下 12 项权威认证仅用 4 个月，主动构建个人品牌站点与自动化工具链，始终以结果为导向、追求高效规范交付；高中三年 6+ 次年级前十（前 1%），高考裸分 640+ 考入大连理工创新班，在长期高压学习中形成持续精进的内驱节奏。</li>
+                <li><b>广泛技术兴趣与长期运动自律：</b>持续关注机器人、AI Agent、能源数字化等跨领域技术方向，保持跨学科视野与好奇心；擅长运动，喜欢乒乓球，具备良好身体素质与稳定心理素质，在高考冲刺与项目赶工双重压力下仍能保持专注稳定输出。</li>
+            </ul>
         </div>
     </div>
 </section>
