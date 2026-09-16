@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>气体水合物相平衡预测器 · 科研版</title>
+<style>
+  :root{
+    --bg:#eef2f7; --card:#ffffff; --ink:#0f172a; --sub:#64748b; --line:#e2e8f0;
+    --blue:#1d4ed8; --blue2:#2563eb; --soft:#eff4ff; --accent:#0ea5e9;
+    --ok:#16a34a; --warn:#d97706; --bad:#dc2626;
+    --shadow:0 1px 3px rgba(15,23,42,.06),0 8px 24px rgba(15,23,42,.06);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.6;padding:0 0 60px}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+  /* hero */
+  .hero{background:linear-gradient(135deg,#1e3a8a,#2563eb 55%,#0ea5e9);
+    color:#fff;padding:38px 0 34px;margin-bottom:26px;
+    border-bottom:4px solid rgba(255,255,255,.25)}
+  .hero .wrap{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+  .logo{flex:0 0 auto;filter:drop-shadow(0 4px 10px rgba(0,0,0,.25))}
+  .hero h1{font-size:30px;font-weight:800;letter-spacing:.5px}
+  .hero p{opacity:.92;margin-top:6px;font-size:15px;max-width:680px}
+  .tag{display:inline-block;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);
+    padding:3px 11px;border-radius:999px;font-size:12.5px;margin-top:12px;margin-right:8px}
+  /* grid */
+  .grid{display:grid;grid-template-columns:1.05fr .95fr;gap:22px;align-items:start}
+  @media(max-width:880px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    box-shadow:var(--shadow);padding:22px 22px 24px;margin-bottom:22px}
+  .card h2{font-size:18px;font-weight:750;margin-bottom:4px;display:flex;align-items:center;gap:9px}
+  .card h2 .dot{width:9px;height:9px;border-radius:3px;background:var(--blue2)}
+  .card .lead{color:var(--sub);font-size:13.5px;margin-bottom:16px}
+  /* tabs */
+  .tabs{display:flex;gap:6px;background:var(--soft);padding:5px;border-radius:10px;margin-bottom:16px}
+  .tabs button{flex:1;border:none;background:transparent;padding:9px 8px;border-radius:7px;
+    font-size:14px;font-weight:650;color:var(--sub);cursor:pointer;transition:.15s}
+  .tabs button.on{background:#fff;color:var(--blue);box-shadow:0 1px 3px rgba(15,23,42,.12)}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:13px;font-weight:650;margin-bottom:6px;color:#334155}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .row>*{flex:1;min-width:120px}
+  select,input[type=number]{width:100%;padding:10px 12px;border:1px solid var(--line);
+    border-radius:9px;font-size:14px;background:#fff;color:var(--ink);font-family:inherit}
+  select:focus,input:focus{outline:2px solid var(--blue2);outline-offset:0;border-color:var(--blue2)}
+  .btn{width:100%;margin-top:6px;background:var(--blue);color:#fff;border:none;padding:12px;
+    border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;transition:.15s}
+  .btn:hover{background:#1e40af}
+  .btn.ghost{background:var(--soft);color:var(--blue);border:1px solid var(--line)}
+  /* result */
+  .result{margin-top:16px;border-radius:11px;padding:16px 18px;font-size:14.5px;
+    border:1px solid var(--line);background:#f8fafc}
+  .result .num{font-size:30px;font-weight:800;color:var(--blue);letter-spacing:.3px}
+  .result .unit{font-size:15px;color:var(--sub);font-weight:600}
+  .badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12.5px;
+    font-weight:700;margin-left:8px}
+  .badge.ok{background:#dcfce7;color:var(--ok)}
+  .badge.no{background:#fee2e2;color:var(--bad)}
+  .badge.note{background:#fef3c7;color:var(--warn)}
+  details{border:1px solid var(--line);border-radius:10px;padding:0 14px;margin-top:14px;background:#fff}
+  details summary{cursor:pointer;font-weight:650;font-size:14px;padding:12px 0;color:#334155}
+  details[open] summary{border-bottom:1px solid var(--line);margin-bottom:10px}
+  .mini{font-size:13px;color:var(--sub)}
+  .mixrow{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+  .mixrow select{flex:2}.mixrow input{flex:1}.mixrow .x{flex:0 0 auto;color:var(--bad);
+    cursor:pointer;font-weight:800;padding:0 6px}
+  /* plot */
+  svg{width:100%;height:auto;display:block}
+  .plotlegend{display:flex;flex-wrap:wrap;gap:10px 18px;margin-top:12px;font-size:12.5px;color:var(--sub)}
+  .plotlegend span{display:inline-flex;align-items:center;gap:6px}
+  .sw{width:14px;height:3px;border-radius:2px;display:inline-block}
+  /* table */
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:center}
+  th{background:var(--soft);font-weight:700;color:#334155}
+  td.l{text-align:left}
+  .pill{display:inline-block;padding:1px 8px;border-radius:6px;font-size:12px;font-weight:700}
+  .pill.sI{background:#dbeafe;color:#1d4ed8}.pill.sII{background:#fae8ff;color:#9333ea}
+  /* literature */
+  .lit{margin-top:6px}
+  .lit h3{font-size:15px;margin:14px 0 4px;color:#1e293b}
+  .lit p{font-size:13.5px;color:#475569;margin-bottom:6px}
+  .lit a{color:var(--blue);text-decoration:none;word-break:break-all}
+  .lit a:hover{text-decoration:underline}
+  .ref{background:#f8fafc;border-left:3px solid var(--blue2);padding:10px 14px;border-radius:0 8px 8px 0;
+    margin:8px 0;font-size:13px}
+  .ref b{color:#0f172a}
+  /* dict */
+  .dict{display:grid;grid-template-columns:1fr 1fr;gap:10px 22px}
+  @media(max-width:600px){.dict{grid-template-columns:1fr}}
+  .dict dt{font-weight:700;color:var(--blue);font-size:13.5px}
+  .dict dd{font-size:13px;color:var(--sub);margin:2px 0 8px}
+  .foot{color:var(--sub);font-size:12.5px;text-align:center;margin-top:8px;line-height:1.7}
+  .formula{background:#0f172a;color:#e2e8f0;padding:12px 16px;border-radius:10px;
+    font-family:"SFMono-Regular",Consolas,monospace;font-size:13.5px;overflow-x:auto;margin:10px 0}
+  .formula .c{color:#7dd3fc}
+  .hl{background:#fef9c3;padding:0 3px;border-radius:3px}
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="wrap">
+    <svg class="logo" width="62" height="62" viewBox="0 0 62 62" fill="none">
+      <polygon points="31,4 54,17 54,45 31,58 8,45 8,17" stroke="#fff" stroke-width="2.4" fill="rgba(255,255,255,.10)"/>
+      <polygon points="31,16 44,23 44,39 31,46 18,39 18,23" stroke="#bae6fd" stroke-width="1.6"/>
+      <circle cx="31" cy="31" r="5" fill="#fff"/>
+      <circle cx="31" cy="16" r="2.4" fill="#bae6fd"/>
+      <circle cx="44" cy="31" r="2.4" fill="#bae6fd"/>
+      <circle cx="31" cy="46" r="2.4" fill="#bae6fd"/>
+      <circle cx="18" cy="31" r="2.4" fill="#bae6fd"/>
+    </svg>
+    <div>
+      <h1>气体水合物相平衡预测器</h1>
+      <p>基于 Clausius–Clapeyron 关联式 + 公开实验数据标定，覆盖 CH₄ / CO₂ / H₂S / C₂H₆ / C₃H₈ / N₂ 单气体、混合气与热力学抑制剂（盐 / 甲醇 / 乙二醇）。给一组温度、压力、气体条件，即可直接预测水合物生成压力或判断是否生成。</p>
+      <div>
+        <span class="tag">纯水精度 RMS &lt; 10%</span>
+        <span class="tag">混合气 · 抑制剂</span>
+        <span class="tag">教学 / 科研估算</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="grid">
+    <!-- 计算器 -->
+    <div class="card">
+      <h2><span class="dot"></span>预测计算</h2>
+      <div class="lead">两种模式：① 输入温度 → 预测平衡压力；② 输入温度+压力 → 判断是否生成。</div>
+      <div class="tabs">
+        <button id="tabP" class="on" onclick="setMode('P')">预测平衡压力</button>
+        <button id="tabJ" onclick="setMode('J')">判断是否生成</button>
+      </div>
+
+      <div class="field">
+        <label>选择气体</label>
+        <select id="gas" onchange="onGas()"></select>
+      </div>
+
+      <details id="mixBox">
+        <summary>＋ 使用混合气（多组分摩尔分数）</summary>
+        <div id="mixList"></div>
+        <button class="btn ghost" style="margin-top:6px" onclick="addMix()">添加组分</button>
+        <div class="mini" style="margin-top:8px">混合气用 Lipenkov–Istomin 组合规则：1/P = Σ(yᵢ / Pᵢ)。各组分摩尔分数之和应为 1。</div>
+      </details>
+
+      <div class="field" style="margin-top:14px">
+        <label>温度 T（°C）</label>
+        <input type="number" id="temp" value="4" step="0.1">
+      </div>
+
+      <div class="field" id="pField" style="display:none">
+        <label>压力 P（bar）</label>
+        <input type="number" id="pres" value="50" step="0.1">
+      </div>
+
+      <details>
+        <summary>＋ 添加热力学抑制剂（盐 / 醇）</summary>
+        <div class="field" style="margin-top:10px">
+          <label>抑制剂类型</label>
+          <select id="inhib">
+            <option value="none">无</option>
+            <option value="NaCl">NaCl 盐水（盐度）</option>
+            <option value="MeOH">甲醇 MeOH</option>
+            <option value="MEG">乙二醇 MEG</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>浓度（质量百分数 wt%）</label>
+          <input type="number" id="inhibW" value="10" step="0.5" min="0">
+        </div>
+        <div class="mini" id="inhibHint"></div>
+      </details>
+
+      <button class="btn" onclick="calc()">计算预测</button>
+
+      <div id="out" class="result" style="display:none"></div>
+    </div>
+
+    <!-- 相图 -->
+    <div class="card">
+      <h2><span class="dot"></span>温度–压力相图</h2>
+      <div class="lead">对数压力轴。曲线左侧（低温高压）为水合物稳定区（淡色阴影为当前选中气体）。CO₂ 标注了上 / 下四相点 Q2 / Q1。</div>
+      <div class="plotwrap"><svg id="plot" viewBox="0 0 680 420" role="img" aria-label="相图"></svg></div>
+      <div class="plotlegend" id="legend"></div>
+    </div>
+  </div>
+
+  <!-- 模型与方法 -->
+  <div class="card">
+    <h2><span class="dot"></span>模型与标定参数</h2>
+    <div class="lead">预测引擎：Clausius–Clapeyron 积分形式 <b>ln P = a + b/T</b>（P 单位 bar，T 单位 K）。各气体用公开实验数据最小二乘标定。</div>
+    <div class="formula"><span class="c">ln</span>(P[bar]) = a + b / T &nbsp;&nbsp;|&nbsp;&nbsp; 抑制剂：等效为纯水在 <span class="c">T + ΔT</span> 处的平衡压力 &nbsp;&nbsp;|&nbsp;&nbsp; 混合气：1/P = Σ(yᵢ/Pᵢ)</div>
+    <table>
+      <thead><tr><th>气体</th><th>结构</th><th>a</th><th>b</th><th>可靠温区</th><th>标定 RMS</th></tr></thead>
+      <tbody id="paramTbl"></tbody>
+    </table>
+    <div class="mini" style="margin-top:10px">
+      标定数据来源：CH₄/CO₂（Frontiers 2021、PMC 实验表）、H₂S（ACS <i>J. Chem. Eng. Data</i>）、C₂H₆（100 nm 孔≈本体）、C₃H₈（Lw–H–V 三相线）、N₂（van Cleeff &amp; Diepen 等实验值）。CO₂ 超过上四相点 Q2（10 °C, 45 bar）进入液态 CO₂ 共存区，工具不覆盖。
+    </div>
+  </div>
+
+  <!-- 文献综述 -->
+  <div class="card">
+    <h2><span class="dot"></span>文献学习综述（网络检索整理）</h2>
+    <div class="lit">
+      <h3>1 · 相平衡模型的两大路线</h3>
+      <p><b>统计热力学路线（vdW–P / Kihara）</b>：van der Waals &amp; Platteeuw (1959) 把水合物看作"固体溶液"，用 <span class="hl">Kihara 球对称势能</span>算 Langmuir 常数、配 Peng–Robinson 等状态方程算气相逸度；Klauda–Sandler、Chen–Guo 在此基础上发展出力更稳的"逸度法"。这是 CSMGem、Multiflash 等工业软件的内核。</p>
+      <p><b>经验关联式路线（本工具采用）</b>：对单一纯气体，相平衡条件直接积分得到 Clausius–Clapeyron 形式 ln P = a + b/T，用实验点标定 a、b。优点：透明、可解释、外推稳，无需状态方程迭代——非常适合教学与快速估算。</p>
+
+      <h3>2 · CO₂ 水合物的两个四相点（关键！）</h3>
+      <p>CO₂ 与甲烷不同，存在液态 CO₂ 共存段，导致相图在 <b>Q2 = 283 K / 45 bar</b> 出现斜率突变（上四相点：水合物+水+液态 CO₂+气相）；下方还有 <b>Q1 = 271.6 K / 10.4 bar</b>（冰+水+水合物+气相）。这正是早先用单一直线外推会差 3 倍的根源。</p>
+
+      <h3>3 · 热力学抑制剂（让水合物更难生成）</h3>
+      <p>本质是降低<span class="hl">水活度 a_w</span>，把相平衡线向右（高压）推。本工具统一用"生成温度下降量 ΔT"处理：NaCl 用冰点下降近似 ΔT = 1.86 × 摩尔浓度；甲醇/MEG 用 2024 年 <i>ChemEngineering</i> 二次式（ΔT = 0.3938x + 0.006166x² 等）。这正是输气管道防冰堵的原理。</p>
+
+      <h3>4 · 机器学习的最新进展（2024–2025）</h3>
+      <p>2025 年 ACS《Energy &amp; Fuels》综述指出，ANN / SVR / RF / DNN 已成为主流，随机森林 R² 可达 0.96；但<b>缺乏不确定性量化、外推能力差</b>。这反衬出"物理约束 + 实验标定"的关联式在可靠性和可解释性上的优势。物理引导神经网络（PGNN）是二者融合的前沿方向。</p>
+
+      <h3>5 · 权威实验数据库</h3>
+      <p>NIST 气体水合物标准参考数据库 <b>SRD #156</b>（约 12000 个实验点、150 种化合物）免费开放，是标定模型的首选数据源。</p>
+
+      <h3>核心参考文献（可点击）</h3>
+      <div class="ref"><b>[1]</b> AI/ML in Thermodynamic Gas Hydrate Studies: A Review. <i>Energy Fuels</i> 2025. <a href="https://pubs.acs.org/doi/10.1021/acs.energyfuels.5c02863" target="_blank">pubs.acs.org/doi/10.1021/acs.energyfuels.5c02863</a></div>
+      <div class="ref"><b>[2]</b> Quadruple point in CO₂ hydrate system. <i>Fluid Phase Equilib.</i> 2017. <a href="https://www.sciencedirect.com/science/article/pii/S0378381216306100" target="_blank">sciencedirect.com/S0378381216306100</a></div>
+      <div class="ref"><b>[3]</b> Unveiling the CO₂ hydrate phase diagram (Q2 定位). <i>J. Chem. Phys.</i> 2023. <a href="https://pubs.aip.org/aip/jcp/article/163/24/241101/3375314" target="_blank">pubs.aip.org/aip/jcp/163/24/241101</a></div>
+      <div class="ref"><b>[4]</b> H₂S clathrate hydrate equilibrium data. <i>J. Chem. Eng. Data</i>. <a href="https://pubs.acs.org/doi/10.1021/je900209y" target="_blank">pubs.acs.org/doi/10.1021/je900209y</a></div>
+      <div class="ref"><b>[5]</b> Chemical Inhibitors in Gas Hydrate Formation: A Review of Modelling. <i>ChemEngineering</i> 2024. <a href="https://www.researchgate.net/publication/386410605" target="_blank">researchgate.net/publication/386410605</a></div>
+      <div class="ref"><b>[6]</b> New pragmatic strategies for Kihara parameters in vdW-P. <i>Chem. Eng. J.</i> 2021. <a href="https://www.sciencedirect.com/science/article/pii/s0009250921007788" target="_blank">sciencedirect.com/S0009250921007788</a></div>
+      <div class="ref"><b>[7]</b> NIST Gas Hydrate SRD #156. <a href="http://gashydrates.nist.gov" target="_blank">gashydrates.nist.gov</a></div>
+    </div>
+  </div>
+
+  <!-- 术语词典 -->
+  <div class="card">
+    <h2><span class="dot"></span>术语词典（给非技术读者）</h2>
+    <dl class="dict">
+      <dt>水合物 Hydrate</dt><dd>气体分子被水分子"笼子"关住形成的冰状晶体，如可燃冰（甲烷水合物）。</dd>
+      <dt>客体 / 主体 guest / host</dt><dd>客体=被关的气体分子；主体=搭笼子的水分子骨架。</dd>
+      <dt>结构 I / II / H (sI/sII/sH)</dt><dd>水分子笼的不同堆积方式；小客体（CH₄、CO₂）多成 sI，稍大（N₂、丙烷）多成 sII。</dd>
+      <dt>相平衡 / 相图</dt><dd>水合物相与气/液/冰相"和平共处"的温度-压力边界；线左生成、线右分解。</dd>
+      <dt>四相点 Quadruple point</dt><dd>四个相共存的唯一点（自由度=0），如 CO₂ 的 Q1、Q2。</dd>
+      <dt>Clausius–Clapeyron</dt><dd>描述相变时压力随温度变化的公式；积分即得本工具的 ln P = a + b/T。</dd>
+      <dt>抑制剂 Inhibitor</dt><dd>加盐/醇使水合物更难生成的物质，用于管道防堵（降生成温度）。</dd>
+      <dt>Langmuir 常数</dt><dd>统计热力学里描述气体分子"进笼概率"的参数，由 Kihara 势能积分得到。</dd>
+      <dt>水活度 a_w</dt><dd>水中"有效水分"的度量；抑制剂降低 a_w，等于抬高了生成门槛。</dd>
+    </dl>
+  </div>
+
+  <div class="foot">
+    本工具用于<b>教学、课程作业与工程估算</b>。机理基于公开文献的关联式与标定，未经严格工业认证，<b>不可直接用于工艺设计或安全判定</b>。<br>
+    参数随实验数据持续校准 · 单文件离线可用 · 零外链
+  </div>
+</div>
+
+<script>
+/* ===== 标定参数（与 Python hydrate_engine.py 一致）===== */
+const GAS = {
+  CH4:  {name:"甲烷 CH₄",   struct:"sI",  a:34.3873, b:-8518.3,  lo:270.0, hi:290.0,   col:"#2563eb"},
+  CO2:  {name:"二氧化碳 CO₂", struct:"sI", a:37.6784, b:-9619.1,  lo:272.0, hi:283.6,   col:"#0891b2"},
+  H2S:  {name:"硫化氢 H₂S",  struct:"sI",  a:31.4011, b:-8591.1,  lo:277.0, hi:302.0,   col:"#d97706"},
+  C2H6: {name:"乙烷 C₂H₆",   struct:"sI",  a:41.9378, b:-11088.6, lo:278.0, hi:288.0,   col:"#16a34a"},
+  C3H8: {name:"丙烷 C₃H₈",   struct:"sII", a:60.9453, b:-16554.5, lo:272.0, hi:281.2,   col:"#9333ea"},
+  N2:   {name:"氮气 N₂",     struct:"sII", a:10.9912, b:-1640.4,  lo:244.0, hi:271.5,  col:"#64748b"},
+};
+const CO2_Q2=[283.15,44.99], CO2_Q1=[271.6,10.4];
+const RMS = {CH4:"8.7%",CO2:"10.1%",H2S:"1.9%",C2H6:"4.7%",C3H8:"0.9%",N2:"6.3%(冰相区)"};
+let MODE="P", lastPt=null;
+
+/* ===== 核心算法（与 Python hydrate_engine.py 一致）===== */
+function inhibDeltaT(kind,wt){
+  if(!kind||kind==="none"||wt<=0) return 0;
+  if(kind==="NaCl"){ const m=(wt/58.44)/((100-wt)/1000); return 1.86*m; }
+  if(kind==="MeOH") return 0.3938*wt+0.006166*wt*wt;
+  if(kind==="MEG")  return 0.1721*wt+0.004466*wt*wt;
+  return 0;
+}
+function peqPure(gas,T){
+  const g=GAS[gas];
+  if(T<g.lo||T>g.hi) return {P:null,note:`${gas} 可靠温区 ${(g.lo-273.15).toFixed(1)}~${(g.hi-273.15).toFixed(1)}°C，超出不预测`};
+  if(gas==="CO2"&&T>CO2_Q2[0]) return {P:null,note:"CO₂ 超过上四相点 Q2(10°C,45bar)进入液态CO₂共存区，本工具不覆盖"};
+  return {P:Math.exp(g.a+g.b/T),note:null};
+}
+function peqInhib(gas,T,kind,wt){ const dT=inhibDeltaT(kind,wt); return peqPure(gas,T+dT); }
+function peqMix(comp,T){
+  let inv=0; const notes=[];
+  for(const [gas,y] of comp){ const r=peqPure(gas,T); if(!r.P){notes.push(`${gas}: ${r.note}`);return {P:null,notes};} inv+=y/r.P; }
+  if(inv<=0) return {P:null,notes:["组成无效"]};
+  return {P:1/inv,notes:[]};
+}
+
+/* ===== 初始化 ===== */
+function init(){
+  const sel=document.getElementById("gas");
+  for(const k in GAS){ const o=document.createElement("option"); o.value=k; o.textContent=GAS[k].name; sel.appendChild(o); }
+  addMix(); addMix();
+  buildParamTable(); buildLegend(); drawPlot();
+  document.getElementById("inhib").addEventListener("change",updInhibHint);
+  updInhibHint();
+}
+function buildParamTable(){
+  const tb=document.getElementById("paramTbl");
+  for(const k in GAS){ const g=GAS[k];
+    tb.innerHTML+=`<tr><td class="l"><b>${g.name}</b></td><td><span class="pill ${g.struct}">${g.struct}</span></td>
+      <td>${g.a.toFixed(4)}</td><td>${g.b.toFixed(1)}</td>
+      <td>${(g.lo-273.15).toFixed(0)}~${(g.hi-273.15).toFixed(0)}°C</td><td>${RMS[k]}</td></tr>`; }
+}
+function buildLegend(){
+  const lg=document.getElementById("legend"); lg.innerHTML="";
+  for(const k in GAS){ const g=GAS[k];
+    lg.innerHTML+=`<span><i class="sw" style="background:${g.col}"></i>${g.name}</span>`; }
+  lg.innerHTML+=`<span><i class="sw" style="background:#dc2626"></i>CO₂ 四相点 Q2/Q1</span>`;
+}
+function setMode(m){
+  MODE=m;
+  document.getElementById("tabP").classList.toggle("on",m==="P");
+  document.getElementById("tabJ").classList.toggle("on",m==="J");
+  document.getElementById("pField").style.display = m==="J"?"block":"none";
+}
+function onGas(){ drawPlot(); }
+
+/* ===== 混合气 UI ===== */
+function addMix(){
+  const div=document.getElementById("mixList");
+  const row=document.createElement("div"); row.className="mixrow";
+  let opts=""; for(const k in GAS) opts+=`<option value="${k}">${GAS[k].name}</option>`;
+  row.innerHTML=`<select>${opts}</select><input type="number" value="0.5" step="0.05" min="0" max="1"><span class="x" onclick="this.parentNode.remove()">✕</span>`;
+  div.appendChild(row);
+}
+function getMix(){
+  const rows=document.getElementById("mixList").children;
+  const out=[]; let sum=0;
+  for(const r of rows){ const g=r.querySelector("select").value; const y=parseFloat(r.querySelector("input").value)||0; out.push([g,y]); sum+=y; }
+  return {comp:out,sum};
+}
+
+/* ===== 抑制剂提示 ===== */
+function updInhibHint(){
+  const k=document.getElementById("inhib").value, w=parseFloat(document.getElementById("inhibW").value)||0;
+  const el=document.getElementById("inhibHint");
+  if(k==="none"){ el.textContent="未添加抑制剂。"; return; }
+  const dT=inhibDeltaT(k,w);
+  const name={NaCl:"NaCl 盐水",MeOH:"甲醇",MEG:"乙二醇"}[k];
+  el.innerHTML=`${name} ${w} wt% → 生成温度下降 <b>ΔT ≈ ${dT.toFixed(2)} °C</b>（即需要更高压力才生成）。`;
+}
+
+/* ===== 计算 ===== */
+function calc(){
+  const T=parseFloat(document.getElementById("temp").value)+273.15;
+  const useMix=document.getElementById("mixBox").hasAttribute("open") && document.getElementById("mixList").children.length>0;
+  const inhib=document.getElementById("inhib").value, w=parseFloat(document.getElementById("inhibW").value)||0;
+  const out=document.getElementById("out"); out.style.display="block";
+
+  if(useMix){
+    const {comp,sum}=getMix();
+    if(Math.abs(sum-1)>0.02){ out.className="result"; out.innerHTML=`<span class="badge note">注意</span> 各组分摩尔分数之和 = <b>${sum.toFixed(2)}</b>，应为 1。已按比例归一化计算。`; }
+    const c=comp.map(([g,y])=>[g,y/sum]);
+    const r=peqMix(c,T);
+    if(!r.P){ out.className="result"; out.innerHTML=`<span class="badge note">无法计算</span> ${r.notes.join("；")}`; return; }
+    lastPt=[T-273.15,r.P]; drawPlot();
+    out.className="result big";
+    out.innerHTML=`混合气（${c.map(([g,y])=>`${(y*100).toFixed(0)}%${g}`).join(" + ")}）在 <b>${(T-273.15).toFixed(1)}°C</b> 的平衡压力：<br>
+      <span class="num">${r.P.toFixed(1)}</span> <span class="unit">bar</span> &nbsp;（≈ ${(r.P/10).toFixed(2)} MPa）`;
+    return;
+  }
+
+  const gas=document.getElementById("gas").value;
+  if(MODE==="P"){
+    const r=peqInhib(gas,T,inhib,w);
+    if(!r.P){ out.className="result"; out.innerHTML=`<span class="badge note">超出范围</span> ${r.note}`; return; }
+    lastPt=[T-273.15,r.P]; drawPlot();
+    const dT=inhibDeltaT(inhib,w);
+    let extra = (inhib!=="none"&&dT>0) ? `（含 ${inhib} ${w}% ，等效纯水在 ${(T-273.15+dT).toFixed(1)}°C）` : "";
+    out.className="result big";
+    out.innerHTML=`${GAS[gas].name} 在 <b>${(T-273.15).toFixed(1)}°C</b> ${extra} 的平衡压力：<br>
+      <span class="num">${r.P.toFixed(1)}</span> <span class="unit">bar</span> &nbsp;（≈ ${(r.P/10).toFixed(2)} MPa）`;
+  } else {
+    const P=parseFloat(document.getElementById("pres").value);
+    const r=peqInhib(gas,T,inhib,w);
+    if(!r.P){ out.className="result"; out.innerHTML=`<span class="badge note">超出范围</span> ${r.note}`; return; }
+    const ratio=P/r.P;
+    lastPt=[T-273.15,P]; drawPlot();
+    const will = ratio>=1;
+    out.className="result big";
+    out.innerHTML=`${GAS[gas].name} 在 <b>${(T-273.15).toFixed(1)}°C</b>、<b>${P} bar</b> 下：
+      <span class="badge ${will?'ok':'no'}">${will?'会生成水合物':'不会生成'}</span><br>
+      该温度平衡压力 <span class="num" style="font-size:22px">${r.P.toFixed(1)}</span> <span class="unit">bar</span><br>
+      实际压力是平衡压力的 <b>${ratio.toFixed(2)}×</b>（&gt;1 则过饱和、会生成）。`;
+  }
+}
+
+/* ===== 相图绘制（对数压力轴）===== */
+const PL={x0:62,y0:24,w:580,h:340, tmin:-5,tmax:30, pmin:1,pmax:200};
+function X(tc){ return PL.x0+(tc-PL.tmin)/(PL.tmax-PL.tmin)*PL.w; }
+function Ylog(p){ const lmin=Math.log10(PL.pmin),lmax=Math.log10(PL.pmax);
+  return PL.y0+PL.h-(Math.log10(p)-lmin)/(lmax-lmin)*PL.h; }
+function drawPlot(){
+  const svg=document.getElementById("plot");
+  let s="";
+  s+=`<rect x="${PL.x0}" y="${PL.y0}" width="${PL.w}" height="${PL.h}" fill="#fbfdff" stroke="#cbd5e1"/>`;
+  const yticks=[1,2,5,10,20,50,100,200];
+  for(const p of yticks){ const y=Ylog(p);
+    s+=`<line x1="${PL.x0}" y1="${y}" x2="${PL.x0+PL.w}" y2="${y}" stroke="#eef2f7"/>`;
+    s+=`<text x="${PL.x0-8}" y="${y+4}" font-size="11" fill="#94a3b8" text-anchor="end">${p}</text>`; }
+  for(let t=PL.tmin; t<=PL.tmax; t+=5){ const x=X(t);
+    s+=`<line x1="${x}" y1="${PL.y0}" x2="${x}" y2="${PL.y0+PL.h}" stroke="#eef2f7"/>`;
+    s+=`<text x="${x}" y="${PL.y0+PL.h+18}" font-size="11" fill="#94a3b8" text-anchor="middle">${t}°C</text>`; }
+  s+=`<text x="${PL.x0+PL.w/2}" y="${PL.y0+PL.h+38}" font-size="12" fill="#475569" text-anchor="middle">温度 T (°C)</text>`;
+  s+=`<text x="16" y="${PL.y0+PL.h/2}" font-size="12" fill="#475569" text-anchor="middle" transform="rotate(-90,16,${PL.y0+PL.h/2})">平衡压力 P (bar, 对数)</text>`;
+
+  const sel=document.getElementById("gas").value;
+  const gsel=GAS[sel];
+  let pts=[];
+  for(let T=Math.max(gsel.lo,PL.tmin+273.15); T<=Math.min(gsel.hi,PL.tmax+273.15); T+=0.3){
+    const P=Math.exp(gsel.a+gsel.b/T); if(P<PL.pmin||P>PL.pmax) continue;
+    pts.push([T-273.15,P]);
+  }
+  if(pts.length>1){
+    let poly=`${X(PL.tmin)},${Ylog(pts[0][1])} `;
+    for(const [t,p] of pts) poly+=`${X(t)},${Ylog(p)} `;
+    poly+=`${X(pts[pts.length-1][0])},${Ylog(PL.pmax)} ${X(PL.tmin)},${Ylog(PL.pmax)}`;
+    s+=`<polygon points="${poly}" fill="${gsel.col}" opacity="0.08"/>`;
+  }
+
+  for(const k in GAS){ const g=GAS[k];
+    let d=""; let started=false;
+    for(let T=Math.max(g.lo,PL.tmin+273.15); T<=Math.min(g.hi,PL.tmax+273.15); T+=0.3){
+      const P=Math.exp(g.a+g.b/T); if(P<PL.pmin||P>PL.pmax){started=false;continue;}
+      const x=X(T-273.15),y=Ylog(P); d+=(started?"L":"M")+x.toFixed(1)+" "+y.toFixed(1)+" "; started=true;
+    }
+    const w=(k===sel)?3.4:1.6; const op=(k===sel)?1:0.5;
+    s+=`<path d="${d}" fill="none" stroke="${g.col}" stroke-width="${w}" stroke-opacity="${op}" stroke-linejoin="round"/>`;
+  }
+
+  function qpt(q,label){ const x=X(q[0]-273.15),y=Ylog(q[1]);
+    s+=`<circle cx="${x}" cy="${y}" r="5" fill="#dc2626" stroke="#fff" stroke-width="1.5"/>`;
+    s+=`<text x="${x+8}" y="${y-6}" font-size="11" fill="#dc2626" font-weight="700">${label}</text>`; }
+  qpt(CO2_Q2,"Q2 (10°C,45bar)"); qpt(CO2_Q1,"Q1");
+
+  if(lastPt){ const x=X(lastPt[0]),y=Ylog(lastPt[1]);
+    s+=`<g><line x1="${x-7}" y1="${y}" x2="${x+7}" y2="${y}" stroke="#0f172a" stroke-width="2"/>
+        <line x1="${x}" y1="${y-7}" x2="${x}" y2="${y+7}" stroke="#0f172a" stroke-width="2"/>
+        <circle cx="${x}" cy="${y}" r="4" fill="none" stroke="#0f172a" stroke-width="1.5"/></g>`; }
+
+  svg.innerHTML=s;
+}
+window.addEventListener("load",init);
+</script>
+</body>
+</html>
