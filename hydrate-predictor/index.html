@@ -97,6 +97,32 @@
     font-family:"SFMono-Regular",Consolas,monospace;font-size:13.5px;overflow-x:auto;margin:10px 0}
   .formula .c{color:#7dd3fc}
   .hl{background:#fef9c3;padding:0 3px;border-radius:3px}
+}
+/* ===== 手机端适配（≤600px）===== */
+@media(max-width:600px){
+  .wrap{padding:0 14px}
+  .hero{padding:22px 0 20px}
+  .hero h1{font-size:22px}
+  .hero p{font-size:12.5px;margin-top:4px}
+  .hero .logo{width:48px;height:48px}
+  .tag{font-size:11px;padding:2px 9px;margin-top:10px}
+  .card{padding:16px 14px 18px;margin-bottom:16px}
+  .card h2{font-size:16px}
+  .lead{font-size:12.5px}
+  .tabs button{font-size:13px;padding:10px 6px}
+  select,input[type=number]{font-size:16px;padding:12px}  /* 16px 防止 iOS 聚焦时自动放大 */
+  .btn{font-size:16px;padding:14px}
+  .result .num{font-size:24px;word-break:break-word}
+  .result{font-size:13px}
+  table{font-size:11px}
+  th,td{padding:6px 5px}
+  .formula{font-size:12px;padding:10px 12px}
+  .plotlegend{font-size:11px;gap:8px 12px}
+  .mixrow{flex-wrap:wrap;gap:6px}
+  .mixrow select,.mixrow input{flex:1 1 100%}
+  .foot{font-size:11.5px}
+  details summary{font-size:13px}
+}
 </style>
 </head>
 <body>
