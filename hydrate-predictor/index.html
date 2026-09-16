@@ -20,7 +20,7 @@
     color:#fff;padding:38px 0 34px;margin-bottom:26px;
     border-bottom:4px solid rgba(255,255,255,.25)}
   .hero .wrap{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
-  .logo{flex:0 0 auto;filter:drop-shadow(0 4px 10px rgba(0,0,0,.25))}
+  .logo{flex:0 0 auto;width:62px;height:62px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.25))}
   .hero h1{font-size:30px;font-weight:800;letter-spacing:.5px}
   .hero p{opacity:.92;margin-top:6px;font-size:15px;max-width:680px}
   .tag{display:inline-block;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);
@@ -78,6 +78,10 @@
   td.l{text-align:left}
   .pill{display:inline-block;padding:1px 8px;border-radius:6px;font-size:12px;font-weight:700}
   .pill.sI{background:#dbeafe;color:#1d4ed8}.pill.sII{background:#fae8ff;color:#9333ea}
+  /* 表格横向滚动容器：手机端防止参数表溢出卡片（穿模） */
+  .tablescroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:6px}
+  .tablescroll table{margin-top:0}
+  th,td{word-break:break-word}
   /* literature */
   .lit{margin-top:6px}
   .lit h3{font-size:15px;margin:14px 0 4px;color:#1e293b}
@@ -122,6 +126,10 @@
   .mixrow select,.mixrow input{flex:1 1 100%}
   .foot{font-size:11.5px}
   details summary{font-size:13px}
+  /* 手机端：参数表改为可横向滚动，避免列被挤爆或溢出卡片边界（穿模） */
+  .tablescroll table{min-width:600px}
+  .tablescroll::-webkit-scrollbar{height:6px}
+  .tablescroll::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
 }
 </style>
 </head>
@@ -219,10 +227,12 @@
     <h2><span class="dot"></span>模型与标定参数</h2>
     <div class="lead">预测引擎：Clausius–Clapeyron 积分形式 <b>ln P = a + b/T</b>（P 单位 bar，T 单位 K）。各气体用公开实验数据最小二乘标定。</div>
     <div class="formula"><span class="c">ln</span>(P[bar]) = a + b / T &nbsp;&nbsp;|&nbsp;&nbsp; 抑制剂：等效为纯水在 <span class="c">T + ΔT</span> 处的平衡压力 &nbsp;&nbsp;|&nbsp;&nbsp; 混合气：1/P = Σ(yᵢ/Pᵢ)</div>
+    <div class="tablescroll">
     <table>
       <thead><tr><th>气体</th><th>结构</th><th>a</th><th>b</th><th>可靠温区</th><th>标定 RMS</th></tr></thead>
       <tbody id="paramTbl"></tbody>
     </table>
+    </div>
     <div class="mini" style="margin-top:10px">
       标定数据来源：CH₄/CO₂（Frontiers 2021、PMC 实验表）、H₂S（ACS <i>J. Chem. Eng. Data</i>）、C₂H₆（100 nm 孔≈本体）、C₃H₈（Lw–H–V 三相线）、N₂（van Cleeff &amp; Diepen 等实验值）。CO₂ 超过上四相点 Q2（10 °C, 45 bar）进入液态 CO₂ 共存区，工具不覆盖。
     </div>
