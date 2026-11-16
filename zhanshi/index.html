@@ -339,7 +339,7 @@
 <style>@media print{#publicBar{display:none!important}}</style>
 <div id="publicBar" style="background:#0f2d4d;border-bottom:2px solid #b8862b;color:#f3e6c8;
   padding:10px 46px 10px 16px;font-size:13px;line-height:1.85;position:relative;z-index:9">
-  <b>国防教育互动展厅 · 公网版</b>　自由提问由 AI 依据 8 部公开权威资料现场作答（约 3 秒）；问到近期时政会自动联网核实。
+  <b>国防教育互动展厅 · 公网版</b>　自由提问由 AI 依据 8 部公开权威资料现场作答，边生成边显示、秒级出声；问到近期时政会自动联网核实。
   12 条精修问答、逐句字幕、男声讲解、讲解员动作均已内置。内容由人工智能生成，以官方表述为准。
   <button type="button" onclick="this.parentNode.style.display='none'" aria-label="关闭提示"
     style="position:absolute;right:10px;top:8px;width:28px;height:28px;border:1px solid #b8862b;
@@ -563,52 +563,66 @@ function syncSubs(){
   if(i!==tlIdx){ tlIdx=i; markIdx(i); }
 }
 
-/* ---------- 云端克隆音色朗读（开关：PUBLIC_TTS.voice 非空才启用） ---------- */
+/* ---------- 云端克隆音色朗读（开关：PUBLIC_TTS.voice 非空才启用） ----------
+   提速版（2026-11-16）：整段合成改为「逐句并行合成 + 逐句排队播放」。
+   文字在流式阶段已逐字显示；这里第一句合成好就立刻开播，后面的句子在后台
+   同时合成、播完前一句接上，避免「整段文字+人为动画+整段合成」三段串行干等。 */
+let audioGen=0;
+function ttsOne(text, host, cfg){
+  const ctrl=new AbortController();
+  const timer=setTimeout(()=>ctrl.abort(),90000);
+  return fetch(host+'/api/v1/services/audio/tts/SpeechSynthesizer',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.key},
+    body:JSON.stringify({model:cfg.model, input:{text:text, voice:cfg.voice, format:'mp3', sample_rate:24000}}),
+    signal:ctrl.signal
+  }).then(r=>{ if(!r.ok) throw new Error('tts http '+r.status); return r.json(); })
+    .then(j=>{ const u=j && j.output && j.output.audio && j.output.audio.url; if(!u) throw new Error('no audio url'); return u; })
+    .finally(()=>clearTimeout(timer));
+}
+function playOne(url){
+  return new Promise(resolve=>{
+    let settled=false;
+    const done=ok=>{ if(settled) return; settled=true; player.onended=null; player.onerror=null; resolve(ok); };
+    player.onended=()=>done(true);
+    player.onerror=()=>done(false);
+    try{ player.src=url; player.currentTime=0; const p=player.play(); if(p&&p.catch) p.catch(()=>done(false)); }
+    catch(e){ done(false); }
+  });
+}
 async function cloudSpeak(sents){
-  const text = sents.join('');
-  const cfg = PUBLIC_TTS;
-  const host = cfg.base.replace(/\/compatible-mode.*$/, '').replace(/\/+$/, '');
-  const ctrl = new AbortController();
-  const timer = setTimeout(()=>ctrl.abort(), 90000);
-  const fallback = ()=>{ clearTimeout(timer); clearInterval(ticker); fallbackSpeak(sents); };
+  const cfg=PUBLIC_TTS;
+  const host=cfg.base.replace(/\/compatible-mode.*$/, '').replace(/\/+$/, '');
+  const list=(sents&&sents.length)?sents:[''];
+  const gen=++audioGen;
   setState('thinking');
-  try{
-    const r = await fetch(host+'/api/v1/services/audio/tts/SpeechSynthesizer', {
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.key},
-      body:JSON.stringify({model:cfg.model, input:{text:text, voice:cfg.voice, format:'mp3', sample_rate:24000}}),
-      signal:ctrl.signal
-    });
-    clearTimeout(timer);
-    if(!r.ok) throw new Error('tts http '+r.status);
-    const j = await r.json();
-    const url = j && j.output && j.output.audio && j.output.audio.url;
-    if(!url) throw new Error('no audio url');
-    /* 按每句字数比例估算时间轴：整段音频，无逐词边界，够用于字幕高亮 */
-    const weights = sents.map(s=>(String(s).replace(/[^\u4e00-\u9fa5A-Za-z0-9]/g,'').length)||1);
-    const total = weights.reduce((a,b)=>a+b,0) || 1;
-    let acc = 0;
-    tl = sents.map((s,i)=>{ const st=acc/total; acc+=weights[i]; return {s:st, e:acc/total, t:s}; });
-    /* e 为比例(0~1)，syncSubs 用 currentTime/duration 换算后比较 */
-    tlIdx=-1; speaking=true; setState('speaking');
-    let fellBack=false;
-    const fb=()=>{ if(fellBack) return; fellBack=true; fallback(); };
-    player.onended=finish;
-    player.onerror=fb;
-    player.src=url; player.currentTime=0;
-    const p=player.play();
-    if(p && p.catch) p.catch(fb);
-    clearInterval(ticker);
-    ticker=setInterval(syncSubsCloud, 80);
-  }catch(e){ fallback(); }
+  /* 一句一个合成请求、全部并行发出；谁先合成好谁先待播 */
+  const jobs=list.map(s=>{ try{ return ttsOne(s, host, cfg); }catch(e){ return Promise.reject(e); } });
+  speaking=true; tlIdx=-1;
+  if(gen!==audioGen) return;
+  setState('speaking');
+  let fellBack=false;
+  const fb=()=>{ if(fellBack||gen!==audioGen) return; fellBack=true; clearInterval(ticker); fallbackSpeak(list); };
+  for(let i=0;i<jobs.length;i++){
+    if(gen!==audioGen || !speaking) return;
+    markIdx(i);                       /* 字幕按当前播放句直接高亮，比按字数估算更准 */
+    let url;
+    try{ url=await jobs[i]; }
+    catch(e){ if(gen===audioGen) fb(); return; }
+    if(gen!==audioGen || !speaking) return;
+    const ok=await playOne(url);
+    if(gen!==audioGen || !speaking) return;
+    if(!ok){ fb(); return; }
+  }
+  if(gen===audioGen) finish();
 }
 function syncSubsCloud(){
+  /* 逐句播放时字幕由 markIdx(i) 直接驱动；此函数保留给按比例同步的备用场景 */
   if(!tl.length) return;
-  const d = player.duration || 0;
-  if(!d) return;
-  const ratio = player.currentTime / d;
-  let i = tl.findIndex(x=>ratio>=x.s && ratio<x.e);
-  if(i<0) i = (ratio>=tl[tl.length-1].e) ? tl.length-1 : 0;
+  const d=player.duration||0; if(!d) return;
+  const ratio=player.currentTime/d;
+  let i=tl.findIndex(x=>ratio>=x.s && ratio<x.e);
+  if(i<0) i=(ratio>=tl[tl.length-1].e)?tl.length-1:0;
   if(i!==tlIdx){ tlIdx=i; markIdx(i); }
 }
 
@@ -629,7 +643,7 @@ function next(){
 }
 
 /* ---------- 一次回答：聆听 → 思考 → 讲解 → 归位 ---------- */
-function presentAnswer(item, title, audioKey, sents, tag, basis){
+function presentAnswer(item, title, audioKey, sents, tag, basis, instant){
   stopAll();
   curItem=item; curKey=audioKey; curTitle=title; curSents=sents; curTag=tag||'';
   const qEl=document.getElementById('aQ'); qEl.textContent='';
@@ -644,6 +658,7 @@ function presentAnswer(item, title, audioKey, sents, tag, basis){
   srcEl.appendChild(srcSpan);
   document.getElementById('answer').scrollIntoView({behavior:'smooth',block:'nearest'});
   setState('listening');
+  if(instant){ startAudio(audioKey, sents); return; }
   stateTimer=setTimeout(()=>{
     setState('thinking');
     stateTimer=setTimeout(()=>startAudio(audioKey, sents), 560);
@@ -731,7 +746,14 @@ function remember(q, a){
   CHAT_HISTORY.push({role:'assistant',content:String(a).slice(0,900)});
   while(CHAT_HISTORY.length>HISTORY_MAX) CHAT_HISTORY.splice(0,2);
 }
-async function callModel(q, useSearch){
+/* 流式打字：把已生成的文字逐句写进字幕区，首个字一到就显示，不再干等整段 */
+function typeInto(partial){
+  const sub=document.getElementById('subs');
+  const ss=splitSentences(partial).map(sg=>'<span>'+sg+'</span>').join('');
+  sub.innerHTML=ss || '<span class="ph online-wait">AI 讲解员正在组织语言…</span>';
+}
+async function callModel(q, useSearch, onChunk){
+  const cb=(typeof onChunk==='function')?onChunk:typeInto;   /* 默认流式打字 */
   const ctrl=new AbortController();
   const timer=setTimeout(()=>ctrl.abort(), 60000);
   const messages=[{role:'system',content:PUBLIC_AI.system}];
@@ -742,15 +764,42 @@ async function callModel(q, useSearch){
     messages:messages,
     temperature:0.3, max_tokens:700, enable_thinking:false
   };
+  if(cb) payload.stream=true;
   if(useSearch) payload.enable_search=true;   /* 实测：必须放请求顶层才生效 */
+  const url=PUBLIC_AI.base.replace(/\/+$/,'')+'/chat/completions';
+  const opt={method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+PUBLIC_AI.key},signal:ctrl.signal};
   try{
-    const r=await fetch(PUBLIC_AI.base.replace(/\/+$/,'')+'/chat/completions',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+PUBLIC_AI.key},
-      body:JSON.stringify(payload), signal:ctrl.signal
-    });
+    const r=await fetch(url, Object.assign({},opt,{body:JSON.stringify(payload)}));
     clearTimeout(timer);
     if(!r.ok) throw new Error('http '+r.status);
+    if(cb && r.body && r.body.getReader){
+      const reader=r.body.getReader(); const dec=new TextDecoder();
+      let buf='', full='';
+      try{
+        for(;;){
+          const {value,done}=await reader.read(); if(done) break;
+          buf+=dec.decode(value,{stream:true});
+          let p;
+          while((p=buf.indexOf('\n'))>=0){
+            const line=buf.slice(0,p).trim(); buf=buf.slice(p+1);
+            if(line.slice(0,5)!=='data:') continue;
+            const data=line.slice(5).trim();
+            if(data==='[DONE]') continue;
+            let j; try{ j=JSON.parse(data); }catch(e){ continue; }
+            const d=(j.choices&&j.choices[0]&&j.choices[0].delta)||{};
+            const piece=d.content||'';
+            if(piece){ full+=piece; cb(full); }
+          }
+        }
+        if(full.trim()) return full.trim();
+      }catch(e){ /* 流式读失败 → 下面用非流式重问一次 */ }
+      const r2=await fetch(url, Object.assign({},opt,{body:JSON.stringify(Object.assign({},payload,{stream:false}))}));
+      if(!r2.ok) throw new Error('http '+r2.status);
+      const j2=await r2.json();
+      const t2=((j2.choices&&j2.choices[0]&&j2.choices[0].message&&j2.choices[0].message.content)||'').trim();
+      if(t2 && cb) cb(t2);
+      return t2;
+    }
     const j=await r.json();
     return ((j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content)||'').trim();
   } finally { clearTimeout(timer); }
@@ -764,7 +813,7 @@ function showAI(text, q, tier){
     ? '已联网检索公开信息并核对 · 内容由人工智能生成，以官方表述为准'
     : '依据 8 部公开权威资料定位作答 · 内容由人工智能生成，以官方表述为准';
   remember(q, text);   /* 记入会话历史，供下一轮追问带上上下文 */
-  presentAnswer(null, q, null, splitSentences(text), tag, basis);
+  presentAnswer(null, q, null, splitSentences(text), tag, basis, true);   /* instant：跳过人为动画，直接开讲 */
   return true;
 }
 async function onlineAsk(q){
@@ -774,7 +823,7 @@ async function onlineAsk(q){
   setState('thinking');
   let textA='';
   try{
-    textA=await callModel(q, false);                       /* A：默认云端作答 */
+    textA=await callModel(q, false);                       /* A：默认云端作答，流式打字 */
   }catch(e){ /* A 失败也再试一次 B，别直接掉本地 */ }
   if(textA && !looksWeak(textA) && showAI(textA, q, 'A')) return;
   /* B：A 答不上（时效问题）→ 自动联网搜索重问 */
