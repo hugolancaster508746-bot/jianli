@@ -621,27 +621,37 @@ async function cloudSpeak(sents){
   speaking=true; tlIdx=-1;
   if(gen!==audioGen) return;
   setState('speaking');
-  let i=0;
-  /* 流水线：先合成第1句；播第1句时后台合成第2句，同时只有1个合成在途 */
-  let nextJob=ttsWithRetry(list[0], host, cfg);
-  while(i<list.length){
+  /* 滑动窗口并发=3（实测并发2/3安全、4起429）：始终保持最多3句在合成，
+     谁先合成好按句序播放，播完腾出的槽位立刻补下一句。既避开限流又保持快速。 */
+  const WIN=3;
+  const jobs=new Array(list.length);
+  let next=0;
+  const fire=()=>{
+    let started=0;
+    while(next<list.length && started<WIN){
+      const k=next++;
+      jobs[k]=ttsWithRetry(list[k], host, cfg);   /* 失败自动重试 */
+      jobs[k].catch(()=>{});                       /* 防止先失败未await时告警 */
+      started++;
+    }
+  };
+  fire();
+  for(let i=0;i<list.length;i++){
     if(gen!==audioGen || !speaking) return;
     markIdx(i);
     let url;
-    try{ url=await nextJob; }
+    try{ url=await jobs[i]; }
     catch(e){
       if(gen!==audioGen) return;
-      await speakOneBrowser(list[i], i);          /* 只补这一句，保住其余克隆音色 */
-      i++;
-      if(i<list.length) nextJob=ttsWithRetry(list[i], host, cfg);
+      await speakOneBrowser(list[i], i);           /* 只补这一句，保住其余克隆音色 */
+      fire();                                      /* 补一个合成槽位 */
       continue;
     }
-    if(i+1<list.length) nextJob=ttsWithRetry(list[i+1], host, cfg);  /* 趁播放预取下一句 */
     if(gen!==audioGen || !speaking) return;
     const ok=await playOne(url);
     if(gen!==audioGen || !speaking) return;
     if(!ok && gen===audioGen) await speakOneBrowser(list[i], i);
-    i++;
+    fire();                                        /* 播完一句，补发下一句保持窗口 */
   }
   if(gen===audioGen) finish();
 }
