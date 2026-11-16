@@ -564,9 +564,10 @@ function syncSubs(){
 }
 
 /* ---------- 云端克隆音色朗读（开关：PUBLIC_TTS.voice 非空才启用） ----------
-   提速版（2026-11-16）：整段合成改为「逐句并行合成 + 逐句排队播放」。
-   文字在流式阶段已逐字显示；这里第一句合成好就立刻开播，后面的句子在后台
-   同时合成、播完前一句接上，避免「整段文字+人为动画+整段合成」三段串行干等。 */
+   修复版（2026-11-16 二修）：原「7句齐发」触发阿里百炼并发限流(429)，失败句导致
+   整段降级成浏览器机器音、音色全变。改为「流水线」：合成第1句就先播、趁播放合成
+   第2句，同时只有 1 个合成请求在跑；单句失败自动重试，重试仍失败只补那一句，
+   绝不整段降级。文字在流式阶段已逐字显示，这里第一句好就立刻开播。 */
 let audioGen=0;
 function ttsOne(text, host, cfg){
   const ctrl=new AbortController();
@@ -576,9 +577,17 @@ function ttsOne(text, host, cfg){
     headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.key},
     body:JSON.stringify({model:cfg.model, input:{text:text, voice:cfg.voice, format:'mp3', sample_rate:24000}}),
     signal:ctrl.signal
-  }).then(r=>{ if(!r.ok) throw new Error('tts http '+r.status); return r.json(); })
+  }).then(r=>{ if(!r.ok){ const e=new Error('tts http '+r.status); e.status=r.status; throw e; } return r.json(); })
     .then(j=>{ const u=j && j.output && j.output.audio && j.output.audio.url; if(!u) throw new Error('no audio url'); return u; })
     .finally(()=>clearTimeout(timer));
+}
+/* 单句合成 + 自动重试（429 多为瞬时限流，退避后通常成功） */
+function ttsWithRetry(text, host, cfg, tries){
+  const n = (typeof tries==='number') ? tries : 3;
+  return ttsOne(text, host, cfg).catch(e=>{
+    if(n<=1) throw e;
+    return new Promise(r=>setTimeout(r, 700*(4-n))).then(()=>ttsWithRetry(text, host, cfg, n-1));
+  });
 }
 function playOne(url){
   return new Promise(resolve=>{
@@ -590,34 +599,53 @@ function playOne(url){
     catch(e){ done(false); }
   });
 }
+/* 单句兜底：仅这一句用浏览器音补念，绝不整段降级 */
+function speakOneBrowser(text, idx){
+  return new Promise(resolve=>{
+    markIdx(idx);
+    let done=false; const fin=()=>{ if(done) return; done=true; resolve(); };
+    const u=new SpeechSynthesisUtterance(text);
+    const v=pickVoice(); if(v) u.voice=v;
+    u.lang='zh-CN'; u.rate=0.90; u.pitch=0.70; u.volume=1;
+    u.onend=fin; u.onerror=fin;
+    try{ synth.speak(u); setTimeout(fin, 12000); }
+    catch(e){ fin(); }
+  });
+}
 async function cloudSpeak(sents){
   const cfg=PUBLIC_TTS;
   const host=cfg.base.replace(/\/compatible-mode.*$/, '').replace(/\/+$/, '');
   const list=(sents&&sents.length)?sents:[''];
   const gen=++audioGen;
   setState('thinking');
-  /* 一句一个合成请求、全部并行发出；谁先合成好谁先待播 */
-  const jobs=list.map(s=>{ try{ return ttsOne(s, host, cfg); }catch(e){ return Promise.reject(e); } });
   speaking=true; tlIdx=-1;
   if(gen!==audioGen) return;
   setState('speaking');
-  let fellBack=false;
-  const fb=()=>{ if(fellBack||gen!==audioGen) return; fellBack=true; clearInterval(ticker); fallbackSpeak(list); };
-  for(let i=0;i<jobs.length;i++){
+  let i=0;
+  /* 流水线：先合成第1句；播第1句时后台合成第2句，同时只有1个合成在途 */
+  let nextJob=ttsWithRetry(list[0], host, cfg);
+  while(i<list.length){
     if(gen!==audioGen || !speaking) return;
-    markIdx(i);                       /* 字幕按当前播放句直接高亮，比按字数估算更准 */
+    markIdx(i);
     let url;
-    try{ url=await jobs[i]; }
-    catch(e){ if(gen===audioGen) fb(); return; }
+    try{ url=await nextJob; }
+    catch(e){
+      if(gen!==audioGen) return;
+      await speakOneBrowser(list[i], i);          /* 只补这一句，保住其余克隆音色 */
+      i++;
+      if(i<list.length) nextJob=ttsWithRetry(list[i], host, cfg);
+      continue;
+    }
+    if(i+1<list.length) nextJob=ttsWithRetry(list[i+1], host, cfg);  /* 趁播放预取下一句 */
     if(gen!==audioGen || !speaking) return;
     const ok=await playOne(url);
     if(gen!==audioGen || !speaking) return;
-    if(!ok){ fb(); return; }
+    if(!ok && gen===audioGen) await speakOneBrowser(list[i], i);
+    i++;
   }
   if(gen===audioGen) finish();
 }
 function syncSubsCloud(){
-  /* 逐句播放时字幕由 markIdx(i) 直接驱动；此函数保留给按比例同步的备用场景 */
   if(!tl.length) return;
   const d=player.duration||0; if(!d) return;
   const ratio=player.currentTime/d;
