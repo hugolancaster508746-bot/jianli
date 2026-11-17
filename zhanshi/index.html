@@ -403,6 +403,22 @@
   #foldChk:not(:checked) ~ .fold-toggle .fold-less{display:none;}
   @media print{.achieve>.foldmax{max-height:none!important;}#foldChk,.fold-toggle{display:none!important;}}
 </style>
+<style>
+  /* 主次分层：01 提问 / 02 回答是主角（保留原有金边呼吸），03/04 降为「引导区」 */
+  .main>.zone-split{display:flex;align-items:center;gap:12px;margin:4px 0 -4px;}
+  .main>.zone-split::before,.main>.zone-split::after{content:"";flex:1;height:1px;background:var(--line-soft);}
+  .main>.zone-split span{font-size:11.5px;color:var(--faint);letter-spacing:.12em;white-space:nowrap;}
+  .main>.hot,.main>.timely{background:rgba(255,255,255,.02);border-color:var(--line-soft);}
+  .main>.hot .sec-head h3,.main>.timely .sec-head h3{font-size:14px;color:var(--muted);}
+  .main>.hot .sec-head .hint,.main>.timely .sec-head .hint{font-size:11px;}
+  /* 降密度：热问默认只显示 6 条，点「展开」看全部 */
+  .hot-grid .q-card:nth-child(n+7){display:none;}
+  .hot-grid.showall .q-card:nth-child(n+7){display:flex;}
+  .hot-more{display:block;margin:12px auto 0;padding:7px 18px;font-size:12.5px;color:var(--gold-lt);
+    background:rgba(255,255,255,.04);border:1px dashed var(--line);border-radius:999px;cursor:pointer;transition:.15s;}
+  .hot-more:hover{border-color:var(--gold);color:#fff;background:var(--gold-dim);}
+  @media print{.hot-grid .q-card:nth-child(n+7){display:flex!important;}.hot-more{display:none!important;}}
+</style>
 </head>
 <body>
 <style>
@@ -503,10 +519,12 @@
         <div class="a-foot">
           <button id="replayBtn">再听一遍</button>
           <button class="ghost" id="followBtn">换个问题</button>
-          <span class="src">公开权威资料整理 · <span class="ai-tag">内容由人工智能生成，以官方表述为准</span></span>
+          
         </div>
       </section>
 
+      <!-- 主次分隔：上方是主讲区，下方是选看引导区 -->
+      <div class="zone-split"><span>下面是引导区 · 挑一个也能讲</span></div>
       <!-- 03 大家都在问（下方引导） -->
       <section class="hot card">
         <div class="sec-head">
@@ -515,6 +533,7 @@
         </div>
         <div class="tabs" id="tabs"></div>
         <div class="hot-grid" id="grid"></div>
+        <button type="button" id="hotMoreBtn" class="hot-more">展开全部 12 条</button>
       </section>
       <!-- C 近两年国防时政（用户拍板新增） -->
       <section class="timely card">
@@ -1132,6 +1151,25 @@ function renderStatsPanel(){
     document.body.appendChild(panel); dock.appendChild(b);
     b.onclick=()=>{ const show=panel.style.display==='none'; panel.style.display=show?'block':'none'; if(show) renderStatsPanel(); };
   });
+})();
+/* 排版梳理：热问默认 6 条，展开/收起；切换分类自动收起 */
+(function(){
+  const grid=document.getElementById('grid');
+  const btn=document.getElementById('hotMoreBtn');
+  if(!grid||!btn) return;
+  function sync(){
+    const n=grid.children.length;
+    grid.classList.remove('showall');
+    btn.style.display = n>6 ? '' : 'none';
+    btn.textContent = '展开全部 ' + n + ' 条';
+  }
+  btn.onclick = function(){
+    const open = !grid.classList.contains('showall');
+    grid.classList.toggle('showall', open);
+    btn.textContent = open ? '收起 ▲' : ('展开全部 ' + grid.children.length + ' 条');
+  };
+  if(window.MutationObserver){ new MutationObserver(sync).observe(grid,{childList:true}); }
+  sync();
 })();
 </script>
 </body>
