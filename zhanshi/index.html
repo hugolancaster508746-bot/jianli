@@ -352,19 +352,41 @@
   #statsPanel .stats-btns button{padding:6px 12px;border:1px solid #b8862b;background:transparent;color:#f3e6c8;border-radius:7px;cursor:pointer;font-size:12px;}
   #statsPanel .stats-btns button:hover{background:var(--gold-dim);}
 </style>
+<style>
+  @keyframes askGlow{
+    0%,100%{box-shadow:0 0 0 0 rgba(216,180,106,.0),0 0 0 1px rgba(216,180,106,.45);}
+    50%{box-shadow:0 0 0 5px rgba(216,180,106,.10),0 0 22px rgba(216,180,106,.22),0 0 0 1px rgba(216,180,106,.75);}
+  }
+  .ask.card{animation:askGlow 3.2s ease-in-out infinite;}
+  .ask .ask-row input:focus{
+    outline:none;border-color:var(--gold);
+    box-shadow:0 0 0 3px rgba(216,180,106,.20),0 0 18px rgba(216,180,106,.15);
+  }
+  .ask .ask-row #askBtn{box-shadow:0 0 16px rgba(216,180,106,.28);}
+  @media (prefers-reduced-motion:reduce){.ask.card{animation:none;}}
+  @media print{.ask.card{animation:none!important;}}
+</style>
 </head>
 <body>
-<style>@media print{#publicBar{display:none!important}}</style>
+<style>
+  @media print{#publicBar,#toolDock{display:none!important}}
+  #toolDock{position:fixed;right:14px;top:14px;z-index:60;display:flex;gap:6px;}
+  #toolDock button{padding:6px 11px;border:1px solid #b8862b;background:rgba(8,33,64,.88);
+    color:#f3e6c8;border-radius:8px;font-size:12px;line-height:1.4;cursor:pointer;
+    box-shadow:0 4px 14px rgba(0,0,0,.3);backdrop-filter:blur(6px);}
+  #toolDock button:hover{background:var(--gold-dim);border-color:var(--gold);}
+</style>
 <div id="publicBar" style="background:#0f2d4d;border-bottom:2px solid #b8862b;color:#f3e6c8;
   padding:10px 46px 10px 16px;font-size:13px;line-height:1.85;position:relative;z-index:9">
   <b>国防教育互动展厅 · 公网版</b>　自由提问由 AI 依据 8 部公开权威资料现场作答，边生成边显示、秒级出声；问到近期时政会自动联网核实。
   12 条精修问答、逐句字幕、男声讲解、讲解员动作均已内置。内容由人工智能生成，以官方表述为准。
-  <button type="button" id="bigModeBtn" onclick="toggleBigMode()" aria-label="切换大字幕模式"
-    style="position:absolute;right:44px;top:8px;padding:4px 10px;border:1px solid #b8862b;
-    background:transparent;color:#f3e6c8;border-radius:6px;font-size:12px;line-height:1.4;cursor:pointer">大字幕</button>
   <button type="button" onclick="this.parentNode.style.display='none'" aria-label="关闭提示"
     style="position:absolute;right:10px;top:8px;width:28px;height:28px;border:1px solid #b8862b;
     background:transparent;color:#f3e6c8;border-radius:6px;font-size:17px;line-height:1;cursor:pointer">×</button>
+</div>
+<!-- 独立工具栏：关掉顶部提示也不消失，现场随时可用 -->
+<div id="toolDock">
+  <button type="button" id="bigModeBtn" onclick="toggleBigMode()" aria-label="切换大字幕模式">大字幕</button>
 </div>
 
 <header>
@@ -1066,12 +1088,11 @@ function renderStatsPanel(){
   let on=false; try{ on=new URLSearchParams(location.search).get('stats')==='1'; }catch(e){}
   if(!on) return;
   document.addEventListener('DOMContentLoaded',()=>{
-    const bar=document.getElementById('publicBar'); if(!bar) return;
+    const dock=document.getElementById('toolDock'); if(!dock) return;
     const b=document.createElement('button'); b.textContent='热词'; b.id='statsBtn';
-    b.style.cssText="position:absolute;right:120px;top:8px;padding:4px 10px;border:1px solid #b8862b;background:transparent;color:#f3e6c8;border-radius:6px;font-size:12px;cursor:pointer";
     const panel=document.createElement('div'); panel.id='statsPanel';
     panel.style.cssText="display:none;position:fixed;right:16px;top:60px;width:min(420px,92vw);max-height:70vh;overflow:auto;z-index:99;background:#0c2745;color:#f3e6c8;border:1px solid #b8862b;border-radius:12px;padding:16px;box-shadow:0 12px 40px rgba(0,0,0,.5);font-size:13px";
-    document.body.appendChild(panel); bar.appendChild(b);
+    document.body.appendChild(panel); dock.appendChild(b);
     b.onclick=()=>{ const show=panel.style.display==='none'; panel.style.display=show?'block':'none'; if(show) renderStatsPanel(); };
   });
 })();
