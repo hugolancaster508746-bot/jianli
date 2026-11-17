@@ -366,6 +366,43 @@
   @media (prefers-reduced-motion:reduce){.ask.card{animation:none;}}
   @media print{.ask.card{animation:none!important;}}
 </style>
+<style>
+  .gate h2{background:linear-gradient(90deg,#F3DCAA,#FFF6DF 45%,#D8B46A);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    text-shadow:0 2px 18px rgba(216,180,106,.18);}
+  .gate .rule{width:76px;height:3px;border-radius:2px;
+    background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+  .gate::after{background:radial-gradient(ellipse,rgba(216,180,106,.20),transparent 62%);
+    animation:gateHalo 8s ease-in-out infinite;}
+  @keyframes gateHalo{0%,100%{transform:scale(1);opacity:.8;}50%{transform:scale(1.14);opacity:1;}}
+  .enter{animation:enterPulse 2.6s ease-in-out infinite;}
+  @keyframes enterPulse{0%,100%{box-shadow:0 5px 0 rgba(0,0,0,.16),0 10px 22px rgba(0,0,0,.14),0 0 0 0 rgba(216,180,106,.42);}
+    50%{box-shadow:0 5px 0 rgba(0,0,0,.16),0 10px 22px rgba(0,0,0,.14),0 0 0 12px rgba(216,180,106,0);}}
+  .enter:hover{animation:none;}
+  @media (prefers-reduced-motion:reduce){.gate::after,.enter{animation:none!important;}}
+  @media print{.gate::after,.enter{animation:none!important;}}
+</style>
+<style>
+  .ask .sec-head .idx::after{content:" ✦";}
+  .answer .a-label::before{content:"🎖 ";}
+  .hot .sec-head .idx::after{content:" 💬";}
+  .timely .sec-head .idx::after{content:" 🛡";}
+</style>
+<style>
+  .achieve{position:relative;}
+  .achieve>.foldmax{max-height:120px;overflow:hidden;transition:max-height .35s ease;}
+  .achieve>.foldmax::after{content:"";position:absolute;left:0;right:0;top:96px;height:40px;
+    background:linear-gradient(180deg,transparent,var(--deep));pointer-events:none;}
+  #foldChk{display:none;}
+  #foldChk:checked ~ .foldmax{max-height:none!important;}
+  #foldChk:checked ~ .foldmax::after{display:none;}
+  .fold-toggle{display:inline-block;margin-top:8px;padding:5px 14px;font-size:12px;
+    color:var(--gold-lt);border:1px solid var(--line);border-radius:8px;cursor:pointer;}
+  .fold-toggle:hover{border-color:var(--gold);}
+  #foldChk:checked ~ .fold-toggle .fold-more{display:none;}
+  #foldChk:not(:checked) ~ .fold-toggle .fold-less{display:none;}
+  @media print{.achieve>.foldmax{max-height:none!important;}#foldChk,.fold-toggle{display:none!important;}}
+</style>
 </head>
 <body>
 <style>
@@ -402,7 +439,7 @@
   <p class="kicker">NATIONAL DEFENSE EDUCATION</p>
   <div class="rule"></div>
   <h2>欢迎来到国防教育互动展厅</h2>
-  <p>本页以<strong>自由提问</strong>为主，讲解员「砺剑」用语音与逐句字幕作答；下方另有几条大家常问的问题作引导。讲解音频由 4 位中文男声预先合成，现场可切换。本文件是离线分享版：12 条问答、逐句字幕、教官男声和讲解员动作都已打包，不用联网也不用装东西；AI 实时作答需要现场服务器，本版自由提问只给预置答案并明确标注。</p>
+  <p>本页以<strong>自由提问</strong>为主，讲解员「砺剑」用语音与逐句字幕现场作答。自由提问由云端 AI 依据 8 部公开权威资料实时生成，问到近两年国防时政会自动联网核实；下方另有常见问题和时政卡片作引导。用你的专属音色朗读，逐句字幕同步高亮，讲解员随状态做出动作。内容由人工智能生成，以官方表述为准。</p>
   <button class="enter" id="enterBtn">进入展厅</button>
   <div class="tiny">首次点击用于取得浏览器的语音播放许可 · 建议打开音量或戴耳机</div>
 </div>
@@ -495,7 +532,7 @@
     </div>
   </div>
 
-  <section class="achieve"><h3>关于这个展厅</h3><div style="background:#fff5e4;border-left:4px solid #b8862b;border-radius:0 8px 8px 0;padding:10px 14px;margin:0 0 12px;font-size:13px;line-height:1.85;color:#7a3c00"><b>以下为正式展厅（现场联网版）的完整设计说明，原文保留。</b>本文件是离线分享版，只含 12 条问答、沉稳教官男声、逐句字幕与讲解员动作，不含下面这些联网能力；想用 AI 实时作答，请到汇报现场扫码进展厅。</div><ul><li>12 条热门问题依据 2024 年新修订《中华人民共和国国防教育法》等 8 部公开权威法律法规与政策文件人工精修，每条答案都标注具体出处，下方列有完整依据清单；点一下即答，不联网也能完整演示。</li><li>讲解音频由 4 位中文男声预先合成，逐句字幕按音频时间轴精确高亮；音频文件不在时自动回落到浏览器朗读，仍能完整演示。</li><li>已接入两个大模型：阿里通义千问百炼主用、腾讯云 TokenHub 备用；后台按额度与超时自动切换，观众无感、页面不出现模型菜单。</li><li>每个自由提问都先交给 AI：随问附上 8 部权威依据清单与最贴近的 2 条参考口径，由 AI 判断该引哪部文件后现场组织一段新答案，再经过范围限定、资料随问附带、输出复检三道闸；越界问题礼貌拒答并引回国防教育主题。</li><li>说清边界：这里的「定位」是在随问附带的权威依据清单里定位依据文件，不是实时上网搜网页。AI 用的是自身已有知识加我们给的清单，不会引用今天刚发布的新闻，知识也有截止时间。</li><li>想要真·实时检索：双击「启动展厅-联网搜索版.bat」可启用联网搜索版，让 AI 现搜网页再作答。该能力默认关闭、按次单独计费，且搜到的内容未经人工审核，正式汇报建议先试问再决定用不用。</li><li>页面固定标注资料来源与 AI 生成内容标识；不收集姓名、学号、手机号，提问内容不落盘。</li><li>当前为演示版：接线后每个自由提问都由 AI 现场生成答案，12 条预置答案只在断网 / 超时 / 失败时兜底并明确标注；纯本地页不发任何请求；展示档 / 演示档两档设计与公网合规做法见方案书第五章。</li></ul><div class="ref-title">权威资料依据 · 每条答案下方标注到具体条款</div><ol class="ref-list"><li>《中华人民共和国国防教育法》（2024 年 9 月 13 日修订，2024 年 9 月 21 日起施行）· 中国政府网全文</li><li>《中华人民共和国国防法》（2020 年 12 月 26 日修订，2021 年 1 月 1 日起施行）· 国防部</li><li>《中华人民共和国国家安全法》（2015 年 7 月 1 日起施行）</li><li>《中华人民共和国兵役法》（2021 年修订）</li><li>《中华人民共和国国防动员法》（2010 年 7 月 1 日起施行）</li><li>国务院新闻办公室《新时代的中国国防》白皮书（2019 年 7 月 24 日）</li><li>中共中央、国务院、中央军委《关于加强和改进新时代全民国防教育工作的意见》（2022 年）</li><li>中共中央、国务院《新时代爱国主义教育实施纲要》（2019 年）；党的二十大报告「深化全民国防教育」</li></ol></section>
+  <section class="achieve"><h3>关于这个展厅</h3><input type="checkbox" id="foldChk"><div class="foldmax"><div style="background:#fff5e4;border-left:4px solid #b8862b;border-radius:0 8px 8px 0;padding:10px 14px;margin:0 0 12px;font-size:13px;line-height:1.85;color:#7a3c00"><b>以下为正式展厅（现场联网版）的完整设计说明，原文保留。</b>本文件是离线分享版，只含 12 条问答、沉稳教官男声、逐句字幕与讲解员动作，不含下面这些联网能力；想用 AI 实时作答，请到汇报现场扫码进展厅。</div><ul><li>12 条热门问题依据 2024 年新修订《中华人民共和国国防教育法》等 8 部公开权威法律法规与政策文件人工精修，每条答案都标注具体出处，下方列有完整依据清单；点一下即答，不联网也能完整演示。</li><li>讲解音频由 4 位中文男声预先合成，逐句字幕按音频时间轴精确高亮；音频文件不在时自动回落到浏览器朗读，仍能完整演示。</li><li>已接入两个大模型：阿里通义千问百炼主用、腾讯云 TokenHub 备用；后台按额度与超时自动切换，观众无感、页面不出现模型菜单。</li><li>每个自由提问都先交给 AI：随问附上 8 部权威依据清单与最贴近的 2 条参考口径，由 AI 判断该引哪部文件后现场组织一段新答案，再经过范围限定、资料随问附带、输出复检三道闸；越界问题礼貌拒答并引回国防教育主题。</li><li>说清边界：这里的「定位」是在随问附带的权威依据清单里定位依据文件，不是实时上网搜网页。AI 用的是自身已有知识加我们给的清单，不会引用今天刚发布的新闻，知识也有截止时间。</li><li>想要真·实时检索：双击「启动展厅-联网搜索版.bat」可启用联网搜索版，让 AI 现搜网页再作答。该能力默认关闭、按次单独计费，且搜到的内容未经人工审核，正式汇报建议先试问再决定用不用。</li><li>页面固定标注资料来源与 AI 生成内容标识；不收集姓名、学号、手机号，提问内容不落盘。</li><li>当前为演示版：接线后每个自由提问都由 AI 现场生成答案，12 条预置答案只在断网 / 超时 / 失败时兜底并明确标注；纯本地页不发任何请求；展示档 / 演示档两档设计与公网合规做法见方案书第五章。</li></ul><div class="ref-title">权威资料依据 · 每条答案下方标注到具体条款</div><ol class="ref-list"><li>《中华人民共和国国防教育法》（2024 年 9 月 13 日修订，2024 年 9 月 21 日起施行）· 中国政府网全文</li><li>《中华人民共和国国防法》（2020 年 12 月 26 日修订，2021 年 1 月 1 日起施行）· 国防部</li><li>《中华人民共和国国家安全法》（2015 年 7 月 1 日起施行）</li><li>《中华人民共和国兵役法》（2021 年修订）</li><li>《中华人民共和国国防动员法》（2010 年 7 月 1 日起施行）</li><li>国务院新闻办公室《新时代的中国国防》白皮书（2019 年 7 月 24 日）</li><li>中共中央、国务院、中央军委《关于加强和改进新时代全民国防教育工作的意见》（2022 年）</li><li>中共中央、国务院《新时代爱国主义教育实施纲要》（2019 年）；党的二十大报告「深化全民国防教育」</li></ol></div><label class="fold-toggle" for="foldChk"><span class="fold-more">展开完整说明 ▾</span><span class="fold-less">收起说明 ▴</span></label></section>
 
   <footer>
     <div class="line">
