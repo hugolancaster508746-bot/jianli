@@ -736,10 +736,12 @@ function ttsOne(text, host, cfg){
 }
 /* 单句合成 + 自动重试（429 多为瞬时限流，退避后通常成功） */
 function ttsWithRetry(text, host, cfg, tries){
-  const n = (typeof tries==='number') ? tries : 3;
+  /* 故事长、句子多（300-400字切成十几句），偶发限流更常见；把单句重试提到5次、
+     退避拉长，尽量让每一句都合成成功，避免个别句子掉回浏览器机器音导致音色忽变。 */
+  const n = (typeof tries==='number') ? tries : 5;
   return ttsOne(text, host, cfg).catch(e=>{
     if(n<=1) throw e;
-    return new Promise(r=>setTimeout(r, 700*(4-n))).then(()=>ttsWithRetry(text, host, cfg, n-1));
+    return new Promise(r=>setTimeout(r, 900*(6-n))).then(()=>ttsWithRetry(text, host, cfg, n-1));
   });
 }
 function playOne(url){
