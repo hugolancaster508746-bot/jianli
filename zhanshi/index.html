@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<!-- deployed: 2026-11-18 12:47:23 | build c59463f | 故事音色加固版 -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>强军智答 · 国防教育互动展厅</title>
@@ -840,6 +839,87 @@ function syncSubsCloud(){
   if(i<0) i=(ratio>=tl[tl.length-1].e)?tl.length-1:0;
   if(i!==tlIdx){ tlIdx=i; markIdx(i); }
 }
+/* ============ 流式边生成边朗读（2026-11-18 提速） ============
+   目标：文字流式蹦出第一句就立刻开读，不必等整段生成完。
+   机制：流式打字回调每吐出一个「完整句」就送进本泵合成+按序播放，
+   与后续文字生成并行。句子是随 AI 逐字吐出而逐句到位的（句间隔秒级），
+   天然散开发送，不会像旧版「整段7句齐发」那样触发 429。
+   用独立代次 spGen：A→B 降级 / 新提问时 spReset 递增代次，旧泵立即自杀，
+   绝不串音或重复读。沿用 ttsWithRetry 重试与单句浏览器兜底。 */
+let spGen=0;                 /* 代次：每一轮新答案/转B递增，旧泵看到代次变了就退出 */
+let spSent=[], spJob=[], spUrl=[];   /* 已确认完整句 / 合成Promise / 音频URL */
+let spFed=0, spNext=0;       /* 已送入句数 / 下一个待播放句 */
+let spPlaying=false, spArmed=false;  /* 泵在跑 / 本轮是否允许边读 */
+const spQueue=[]; let spRunningSynth=0; const SP_WIN=3;  /* 合成并发闸门，最多3句在合成 */
+function spReset(){
+  spGen++; spSent=[]; spJob=[]; spUrl=[]; spFed=0; spNext=0;
+  spPlaying=false; spArmed=false; spQueue.length=0;
+  try{player.pause();}catch(e){}
+  try{player.onended=null; player.onerror=null;}catch(e){}
+  try{synth.cancel();}catch(e){}
+}
+/* 合成调度：最多 SP_WIN 句同时在合成，避免一次性多句齐发触发 429 */
+function spDispatch(gen){
+  while(spRunningSynth<SP_WIN && spQueue.length){
+    const task=spQueue.shift();
+    if(task.gen!==spGen) continue;             /* 旧代次任务作废 */
+    spRunningSynth++;
+    ttsWithRetry(task.text, task.host, PUBLIC_TTS).then(u=>task.resolve(u)).catch(()=>task.resolve(null))
+      .finally(()=>{ spRunningSynth--; spDispatch(gen); });
+  }
+}
+/* 从流式累积文本挑出新增的「完整句」送朗读；示弱文本不送（留给转B重来） */
+function spFeed(full){
+  if(!spArmed || typeof splitSentences!=='function') return;
+  if(typeof looksWeak==='function' && looksWeak(full)) return;  /* A答不上：一句都不读，等转B */
+  const gen=spGen, sents=splitSentences(full);
+  const host=PUBLIC_TTS.base.replace(/\/compatible-mode.*$/, '').replace(/\/+$/, '');
+  while(spFed<sents.length){
+    if(!/[。！？；]$/.test(sents[spFed])) break;   /* 末句未完结，等它补全 */
+    const text=sents[spFed], i=spFed++;
+    spSent[i]=text; spUrl[i]=null;
+    spJob[i]=new Promise(resolve=>{ spQueue.push({text, host, gen, resolve}); });
+    spDispatch(gen);
+    spPump(gen);
+  }
+}
+/* 播放泵：按句序等合成完成、逐句播放；只补失败的单句，其余都是克隆音色 */
+async function spPump(gen){
+  if(spPlaying) return;
+  spPlaying=true;
+  if(gen===spGen && spNext===0){ speaking=true; tlIdx=-1; setState('speaking'); }
+  while(gen===spGen && spNext<spFed){
+    const i=spNext;
+    markIdx(i);
+    let url=null;
+    try{ url=await spJob[i]; }catch(e){ url=null; }
+    if(gen!==spGen){ spPlaying=false; return; }
+    if(url){
+      spUrl[i]=url; lastAudioUrls=spUrl.slice();
+      const ok=await playOne(url);
+      if(!ok && gen===spGen) await speakOneBrowser(spSent[i], i);
+    } else if(gen===spGen){
+      await speakOneBrowser(spSent[i], i);
+    }
+    if(gen!==spGen){ spPlaying=false; return; }
+    spNext++;
+  }
+  /* 文本流已结束(spArmed=false)且全部播完才归位；否则等后续句子继续喂 */
+  if(gen===spGen && !spArmed && spFed>0) finish();
+  spPlaying=false;
+}
+/* 流式朗读已接管音频时，只更新静态展示，不 stopAll、不重新 startAudio */
+function presentLive(text, q, tag, basis){
+  curItem=null; curKey=null; curTitle=q; curSents=splitSentences(text); curTag=tag||'';
+  const qEl=document.getElementById('aQ'); qEl.textContent='';
+  qEl.appendChild(document.createTextNode(q));
+  if(curTag){ const sp=document.createElement('span'); sp.className='src-tag'; sp.textContent=curTag; qEl.appendChild(sp); }
+  const srcEl=document.getElementById('aSrc'); srcEl.textContent='资料依据：';
+  const span=document.createElement('span');
+  span.textContent=basis||'公开权威资料整理 · 内容由人工智能生成，以官方表述为准';
+  srcEl.appendChild(span);
+  document.getElementById('answer').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
 
 /* ---------- 兜底：浏览器朗读（音频文件不在时才用） ---------- */
 function fallbackSpeak(sents){
@@ -966,6 +1046,7 @@ function typeInto(partial){
   const sub=document.getElementById('subs');
   const ss=splitSentences(partial).map(sg=>'<span>'+sg+'</span>').join('');
   sub.innerHTML=ss || '<span class="ph online-wait">AI 讲解员正在组织语言…</span>';
+  if(typeof spFeed==='function') spFeed(partial);   /* 边打字边送完整句去朗读（A答不上时spArmed=false自动跳过） */
 }
 async function callModel(q, useSearch, onChunk){
   const cb=(typeof onChunk==='function')?onChunk:typeInto;   /* 默认流式打字 */
@@ -1028,7 +1109,14 @@ function showAI(text, q, tier){
     ? '已联网检索公开信息并核对 · 内容由人工智能生成，以官方表述为准'
     : '依据 8 部公开权威资料定位作答 · 内容由人工智能生成，以官方表述为准';
   remember(q, text);   /* 记入会话历史，供下一轮追问带上上下文 */
-  presentAnswer(null, q, null, splitSentences(text), tag, basis, true);   /* instant：跳过人为动画，直接开讲 */
+  /* 流式边读已启动(spFed>0)：音频由朗读泵接管，这里只更新静态展示，
+     不再 presentAnswer——否则会 stopAll 掐断正在读的句子并从头重读。 */
+  if(typeof spFed==='number' && spFed>0 && typeof presentLive==='function'){
+    spArmed=false;                                   /* 文本已收齐，停止再喂；泵播完后归位 */
+    presentLive(text, q, tag, basis);
+  } else {
+    presentAnswer(null, q, null, splitSentences(text), tag, basis, true);   /* instant：跳过人为动画，直接开讲 */
+  }
   return true;
 }
 async function onlineAsk(q){
@@ -1036,12 +1124,14 @@ async function onlineAsk(q){
   document.getElementById('aQ').textContent=q;
   sub.innerHTML='<span class="ph online-wait">AI 讲解员正在思考作答…</span>';
   setState('thinking');
+  if(typeof spReset==='function'){ spReset(); spArmed=true; }   /* 新问题：清掉上一轮朗读，武装边读边蹦 */
   let textA='';
   try{
-    textA=await callModel(q, false);                       /* A：默认云端作答，流式打字 */
+    textA=await callModel(q, false);                       /* A：默认云端作答，流式打字+边读 */
   }catch(e){ /* A 失败也再试一次 B，别直接掉本地 */ }
   if(textA && !looksWeak(textA) && showAI(textA, q, 'A')) return;
   /* B：A 答不上（时效问题）→ 自动联网搜索重问 */
+  if(typeof spReset==='function'){ spReset(); spArmed=true; }   /* 掐断A已开始的朗读，B重新边读 */
   sub.innerHTML='<span class="ph online-wait">这个问题涉及最新动态，正在联网核实…</span>';
   setState('thinking');
   try{
@@ -1049,6 +1139,7 @@ async function onlineAsk(q){
     if(textB && showAI(textB, q, 'B')) return;
   }catch(e){}
   /* C→本地兜底：A、B 都没成，回落预置答案 */
+  if(typeof spReset==='function') spReset();
   if(textA){ showAI(textA, q, 'A'); return; }
   localAnswerFor(q, '本地兜底 · AI 未连上',
     '网络或额度暂不可用，已用本地预置答案兜底 · 以官方表述为准');
