@@ -184,7 +184,10 @@
   .ask{padding:20px 22px;border-left:3px solid var(--gold);
     background:linear-gradient(160deg,rgba(216,180,106,.11),rgba(255,255,255,.03));}
   .ask .sec-head{margin-bottom:12px;}
-  .ask-row{display:flex;gap:9px;}
+  .ask-row{display:flex;gap:9px;position:relative;padding-top:4px;}
+  .ask-row::before{content:"问 · 你的提问";position:absolute;left:0;top:-11px;
+    font-size:10.5px;letter-spacing:.12em;color:var(--gold-lt);
+    background:#0a1d38;border:1px solid rgba(216,180,106,.35);border-radius:6px;padding:2px 10px;}
   .ask-row input{flex:1;border:1px solid var(--line);border-radius:10px;padding:13px 15px;
     font-size:14.5px;font-family:inherit;outline:none;color:var(--ink);
     background:rgba(3,17,36,.55);transition:.18s;}
@@ -201,13 +204,14 @@
     background:rgba(255,255,255,.04);color:var(--muted);border-radius:999px;cursor:pointer;transition:.15s;}
   .quick button:hover{border-style:solid;border-color:var(--gold);color:#fff;background:var(--gold-dim);}
 
-  /* 02 答案区 */
-  .answer-inner{position:relative;margin-top:18px;padding-top:18px;border-top:1px dashed var(--line);}
-  .answer-inner::before{content:"讲解员作答";position:absolute;right:2px;top:-9px;
-    font-size:10.5px;letter-spacing:.12em;color:var(--gold-lt);
-    background:linear-gradient(180deg,#0c2340,#0a1d38);padding:0 10px;}
-  .answer-inner:not(.active) .a-label,.answer-inner:not(.active) .q-title,
-  .answer-inner:not(.active) .subs,.answer-inner:not(.active) .src-line{display:none;}
+  /* 02 答案区：与提问区拼接，默认即显示"回答"占位，点击提问后填入真实内容 */
+  .answer-inner{position:relative;margin-top:18px;padding-top:22px;padding-bottom:4px;
+    border:1px solid rgba(216,180,106,.30);border-radius:12px;
+    background:linear-gradient(180deg,rgba(216,180,106,.06),rgba(216,180,106,.01));
+    padding-left:16px;padding-right:16px;}
+  .answer-inner::before{content:"答 · 讲解员作答";position:absolute;left:14px;top:-10px;
+    font-size:10.5px;letter-spacing:.12em;color:#3A2A08;font-weight:700;
+    background:var(--gold);border-radius:6px;padding:3px 12px;box-shadow:0 2px 8px rgba(0,0,0,.25);}
   .answer-inner .a-label{font-size:11px;letter-spacing:.16em;color:var(--gold);
     text-transform:uppercase;margin-bottom:8px;}
   .answer-inner .q-title{font-size:16px;font-weight:600;color:#fff;margin:0 0 12px;line-height:1.5;}
@@ -483,24 +487,30 @@
     transform:translateX(-100%);animation:cardSheen 9s ease-in-out infinite;}
   @keyframes cardSheen{0%,72%{transform:translateX(-100%);opacity:0;}
     82%{opacity:.9;}100%{transform:translateX(100%);opacity:0;}}
-  /* ===== 背景动态光晕：几团柔光在页面背后缓缓漂移+呼吸，克制不抢内容 ===== */
-  body::after{content:"";position:fixed;inset:-25%;z-index:0;pointer-events:none;
+  /* ===== 背景动态光晕：几团大柔光在页面背后缓缓漂移+呼吸，明显但不抢内容 ===== */
+  body::after{content:"";position:fixed;inset:-30%;z-index:0;pointer-events:none;
     background:
-      radial-gradient(38% 32% at 22% 28%,rgba(46,124,192,.26),transparent 72%),
-      radial-gradient(34% 30% at 78% 22%,rgba(216,180,106,.13),transparent 72%),
-      radial-gradient(42% 36% at 66% 78%,rgba(38,116,196,.20),transparent 72%),
-      radial-gradient(30% 28% at 16% 82%,rgba(96,74,186,.18),transparent 72%);
-    background-size:180% 180%;
-    animation:auroraDrift 34s ease-in-out infinite alternate,
-              auroraBreathe 11s ease-in-out infinite alternate;
-    will-change:background-position,opacity;}
-  @keyframes auroraDrift{0%{background-position:0% 30%,100% 20%,80% 90%,10% 80%;}
-    100%{background-position:22% 55%,78% 45%,55% 70%,28% 60%;}}
-  @keyframes auroraBreathe{0%{opacity:.55;}100%{opacity:1;}}
+      radial-gradient(42% 38% at 20% 26%,rgba(46,124,192,.38),transparent 70%),
+      radial-gradient(38% 34% at 80% 20%,rgba(216,180,106,.22),transparent 70%),
+      radial-gradient(48% 42% at 68% 80%,rgba(38,116,196,.32),transparent 70%),
+      radial-gradient(36% 34% at 14% 84%,rgba(120,86,206,.26),transparent 70%),
+      radial-gradient(30% 28% at 50% 50%,rgba(40,150,220,.16),transparent 72%);
+    background-size:200% 200%;
+    animation:auroraDrift 26s ease-in-out infinite alternate,
+              auroraBreathe 9s ease-in-out infinite alternate,
+              auroraSpin 60s linear infinite;
+    will-change:background-position,opacity,transform;}
+  @keyframes auroraDrift{0%{background-position:0% 30%,100% 20%,80% 90%,10% 80%,50% 50%;}
+    100%{background-position:24% 58%,76% 42%,52% 66%,30% 58%,48% 44%;}}
+  @keyframes auroraBreathe{0%{opacity:.62;}100%{opacity:1;}}
+  @keyframes auroraSpin{0%{transform:rotate(0deg) scale(1);}
+    100%{transform:rotate(6deg) scale(1.06);}}
   @media (prefers-reduced-motion:reduce){
     .main>.card,.main>.ask,.main>.hot,.main>.timely,.main>.story,.main>.quiz,.main>.quote,.main>.checkin,
-    .sec-head .idx,.main>.card::after,body::after{animation:none!important;}
-    body::after{opacity:.7;}
+    .sec-head .idx,.main>.card::after,body::after,
+    .main>.ask::before,.main>.hot::before,.main>.timely::before,.main>.story::before,
+    .main>.quiz::before,.main>.quote::before,.main>.checkin::before{animation:none!important;}
+    body::after{opacity:.72;}
   }
   @media print{body::after{display:none!important;}}
 
@@ -652,34 +662,37 @@
   .main>.card{background-blend-mode:normal;}
   .main>.ask::before,.main>.hot::before,.main>.timely::before,.main>.story::before,
   .main>.quiz::before,.main>.quote::before,.main>.checkin::before{
-    content:"";position:absolute;inset:0;z-index:0;pointer-events:none;border-radius:inherit;
-    background-repeat:no-repeat;opacity:.14;transition:opacity .5s;}
+    content:"";position:absolute;inset:-6%;z-index:0;pointer-events:none;border-radius:inherit;
+    background-repeat:no-repeat;transition:opacity .5s;
+    animation:artFloat 18s ease-in-out infinite alternate;}
+  @keyframes artFloat{0%{transform:translate3d(0,0,0) scale(1);}
+    100%{transform:translate3d(-1.2%,-1.6%,0) scale(1.04);}}
   /* 提问区：地球 + 信号塔，居右下 */
-  .main>.ask::before{background-image:url('art/planet.webp');background-size:72% auto;
-    background-position:right -8% bottom -30%;opacity:.16;}
+  .main>.ask::before{background-image:url('art/planet.webp');background-size:74% auto;
+    background-position:right -8% bottom -30%;opacity:.24;}
   /* 热门问答：盾牌科技，居右下 */
-  .main>.hot::before{background-image:url('art/shield.webp');background-size:60% auto;
-    background-position:right -6% bottom -34%;opacity:.12;}
+  .main>.hot::before{background-image:url('art/shield.webp');background-size:62% auto;
+    background-position:right -6% bottom -34%;opacity:.20;}
   /* 时政瞭望：战机航母，居右上 */
-  .main>.timely::before{background-image:url('art/carrier.webp');background-size:66% auto;
-    background-position:right -4% top -18%;opacity:.13;}
+  .main>.timely::before{background-image:url('art/carrier.webp');background-size:68% auto;
+    background-position:right -4% top -18%;opacity:.21;}
   /* 国防故事：长城月夜，居右下 */
-  .main>.story::before{background-image:url('art/greatwall.webp');background-size:64% auto;
-    background-position:right -6% bottom -26%;opacity:.15;}
+  .main>.story::before{background-image:url('art/greatwall.webp');background-size:66% auto;
+    background-position:right -6% bottom -26%;opacity:.23;}
   /* 知识闯关：盾牌，居左下（避开题目） */
-  .main>.quiz::before{background-image:url('art/shield.webp');background-size:52% auto;
-    background-position:left -8% bottom -40%;opacity:.10;}
+  .main>.quiz::before{background-image:url('art/shield.webp');background-size:54% auto;
+    background-position:left -8% bottom -40%;opacity:.18;}
   /* 名言撷英：地球星轨，居右上 */
-  .main>.quote::before{background-image:url('art/planet.webp');background-size:58% auto;
-    background-position:right -6% top -30%;opacity:.12;}
+  .main>.quote::before{background-image:url('art/planet.webp');background-size:60% auto;
+    background-position:right -6% top -30%;opacity:.20;}
   /* 星河印记：长城星夜，居右下（星海在上层不会被盖） */
-  .main>.checkin::before{background-image:url('art/greatwall.webp');background-size:70% auto;
-    background-position:right -8% bottom -34%;opacity:.11;}
+  .main>.checkin::before{background-image:url('art/greatwall.webp');background-size:72% auto;
+    background-position:right -8% bottom -34%;opacity:.19;}
   /* 内容始终压在插画之上 */
   .main>.card>*{position:relative;z-index:1;}
   @media (max-width:720px){
     .main>.ask::before,.main>.hot::before,.main>.timely::before,.main>.story::before,
-    .main>.quiz::before,.main>.quote::before,.main>.checkin::before{opacity:.08;background-size:90% auto;}
+    .main>.quiz::before,.main>.quote::before,.main>.checkin::before{opacity:.14;background-size:92% auto;}
   }
   @media print{.main>.card::before{display:none!important;}}
 
@@ -1029,12 +1042,14 @@ function ttsWithRetry(text, host, cfg, tries){
     return new Promise(r=>setTimeout(r, 900*(6-n))).then(()=>ttsWithRetry(text, host, cfg, n-1));
   });
 }
+let _playResolve=null;   /* 供 stopAll 主动解锁挂起的 playOne，避免停止后 Promise 悬挂 */
 function playOne(url){
   return new Promise(resolve=>{
     let settled=false;
-    const done=ok=>{ if(settled) return; settled=true; player.onended=null; player.onerror=null; resolve(ok); };
+    const done=ok=>{ if(settled) return; settled=true; player.onended=null; player.onerror=null; _playResolve=null; resolve(ok); };
     player.onended=()=>done(true);
     player.onerror=()=>done(false);
+    _playResolve=()=>done(false);   /* 停止时由 stopAll 调用，立即结束本句并让播放泵退出 */
     try{ player.src=url; player.currentTime=0; const p=player.play(); if(p&&p.catch) p.catch(()=>done(false)); }
     catch(e){ done(false); }
   });
@@ -1204,6 +1219,20 @@ function presentLive(text, q, tag, basis){
   span.textContent=basis||'公开权威资料整理 · 内容由人工智能生成，以官方表述为准';
   srcEl.appendChild(span);
   document.getElementById('answer').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+
+/* 停止增强版（2026-11-18 修复）：彻底掐断所有播放/合成泵，杜绝停止后冒出机器音 */
+function stopAll(){
+  try{ audioGen++; }catch(e){}
+  try{ spGen++; spQueue.length=0; spPlaying=false; spArmed=false; spRunningSynth=0; }catch(e){}
+  try{ if(typeof _playResolve==='function') _playResolve(); }catch(e){}
+  try{ player.pause(); player.onended=null; player.onerror=null; }catch(e){}
+  try{ synth.cancel(); }catch(e){}
+  clearTimeout(stateTimer); clearInterval(ticker);
+  speaking=false; tl=[]; tlIdx=-1; queue=[]; qi=0;
+  if(typeof setState==='function') setState('idle');
+  document.querySelectorAll('#subs span').forEach(s=>s.classList.remove('cur'));
 }
 
 /* ---------- 兜底：浏览器朗读（音频文件不在时才用） ---------- */
