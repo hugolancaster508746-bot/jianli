@@ -526,9 +526,14 @@
   .sky-stars{position:absolute;inset:0;z-index:1;}
   .star{position:absolute;border-radius:50%;background:rgba(255,255,255,.26);display:block;
     transition:background .5s,box-shadow .5s;
-    animation:starTwinkle var(--tw,4s) ease-in-out infinite alternate;animation-delay:var(--dl,0s);}
+    animation:starTwinkle var(--tw,4s) ease-in-out infinite alternate,
+              starFloat var(--fd,11s) ease-in-out infinite alternate;
+    animation-delay:var(--dl,0s),calc(var(--dl,0s) + 1.3s);}
   .star.lit{background:radial-gradient(circle,#FFF7DE,#F3DCAA 45%,#D8B46A);
-    box-shadow:0 0 8px 2px rgba(243,220,170,.9),0 0 20px 6px rgba(216,180,106,.5);}
+    box-shadow:0 0 8px 2px rgba(243,220,170,.9),0 0 20px 6px rgba(216,180,106,.5);
+    animation:starBreathe var(--tw,4s) ease-in-out infinite alternate,
+              starFloat var(--fd,11s) ease-in-out infinite alternate;
+    animation-delay:var(--dl,0s),calc(var(--dl,0s) + 1.3s);}
   .star.just-lit{animation:starLight .8s cubic-bezier(.2,.8,.2,1);}
   /* 点亮瞬间扩散的金色涟漪 */
   .star.just-lit::after{content:"";position:absolute;left:50%;top:50%;width:5px;height:5px;
@@ -536,6 +541,12 @@
     animation:starRipple .95s ease-out forwards;}
   @keyframes starRipple{0%{transform:scale(1);opacity:.95;}100%{transform:scale(11);opacity:0;}}
   @keyframes starTwinkle{0%{opacity:.35;}100%{opacity:1;}}
+  /* 缓慢漂浮：每颗星按自己的幅度与周期在原地附近游走，整片星海像在流动 */
+  @keyframes starFloat{0%{transform:translate(calc(var(--fx,2px)*-1),calc(var(--fy,2px)*-1));}
+    100%{transform:translate(var(--fx,2px),var(--fy,2px));}}
+  /* 呼吸星闪：已点亮的星光晕一张一合、明暗交替，柔和而不刺眼 */
+  @keyframes starBreathe{0%{opacity:.72;box-shadow:0 0 5px 1px rgba(243,220,170,.45),0 0 12px 3px rgba(216,180,106,.28);}
+    100%{opacity:1;box-shadow:0 0 11px 3px rgba(243,220,170,1),0 0 24px 8px rgba(216,180,106,.6);}}
   @keyframes starLight{0%{transform:scale(.2);opacity:.5;}
     45%{transform:scale(2.4);opacity:1;}
     100%{transform:scale(1);opacity:1;}}
@@ -571,7 +582,7 @@
     62%{transform:translateY(-2px) scale(1.03);opacity:1;}
     100%{transform:translateY(0) scale(1);opacity:1;}}
   @keyframes ckShine{0%{left:-70%;}100%{left:135%;}}
-  @media (prefers-reduced-motion:reduce){.checkin-msg .pop,.checkin-msg .pop::after,.star,.star.just-lit,
+  @media (prefers-reduced-motion:reduce){.checkin-msg .pop,.checkin-msg .pop::after,.star,.star.lit,.star.just-lit,
     .star.just-lit::after,.meteor,.sky::before{animation:none;}}
 </style>
 </head>
@@ -1626,6 +1637,10 @@ const QUOTES_DATA=[{"t": "名言", "c": "兵者，国之大事，死生之地，
       d.style.top=(4+rnd(i,3)*90).toFixed(2)+'%';
       d.style.setProperty('--tw',(2.6+rnd(i,4)*3.4).toFixed(2)+'s');
       d.style.setProperty('--dl',(rnd(i,5)*4).toFixed(2)+'s');
+      /* 每颗星独立的漂浮节奏/幅度：整片星海缓缓错落流动，但位置仍由 i 确定性决定 */
+      d.style.setProperty('--fd',(9+rnd(i,6)*9).toFixed(2)+'s');
+      d.style.setProperty('--fx',(1.2+rnd(i,7)*2.6).toFixed(2)+'px');
+      d.style.setProperty('--fy',(1.2+rnd(i,8)*2.6).toFixed(2)+'px');
       frag.appendChild(d); stars.push(d);
     }
     starsBox.appendChild(frag);
@@ -1633,10 +1648,17 @@ const QUOTES_DATA=[{"t": "名言", "c": "兵者，国之大事，死生之地，
   function light(count, flashIdx){
     for(let i=0;i<stars.length;i++){
       const on=i<count;
-      stars[i].classList.toggle('lit',on);
+      const st=stars[i];
+      st.classList.toggle('lit',on);
       if(on && i===flashIdx){
-        stars[i].classList.remove('just-lit'); void stars[i].offsetWidth; stars[i].classList.add('just-lit');
-      } else if(!on){ stars[i].classList.remove('just-lit'); }
+        /* 点亮瞬间放涟漪，动画结束后移除临时类，让这颗星继续轻微闪烁（不再永久定格） */
+        st.classList.remove('just-lit'); void st.offsetWidth; st.classList.add('just-lit');
+        clearTimeout(st._litTimer);
+        st._litTimer=setTimeout(()=>{ st.classList.remove('just-lit'); },820);
+      } else if(!on){
+        st.classList.remove('just-lit');
+        clearTimeout(st._litTimer);
+      }
     }
   }
   let n=0; try{ n=parseInt(localStorage.getItem(KEY)||'0',10)||0; }catch(e){ n=0; }
