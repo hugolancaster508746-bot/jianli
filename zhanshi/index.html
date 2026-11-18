@@ -504,43 +504,75 @@
     border-radius:9px;cursor:pointer;background:rgba(255,255,255,.04);transition:.15s;}
   .quote-btn:hover{border-color:var(--gold);background:var(--gold-dim);color:#fff;}
 
-  /* 08 国防打卡 —— 一片夜空，每次打卡点亮一颗星 */
-  .checkin{padding:18px 22px 24px;text-align:center;}
+  /* 08 国防打卡 —— 高级夜空：星云漂移 + 流星 + 点亮涟漪，计数在下方，鼓励语发光卡片 */
+  .checkin{padding:18px 22px 26px;text-align:center;}
   .checkin .sec-head{justify-content:center;}
   .checkin-box{max-width:560px;margin:0 auto;}
-  /* 夜空 */
-  .sky{position:relative;height:216px;border-radius:16px;overflow:hidden;
+  /* 夜空本体 */
+  .sky{position:relative;height:196px;border-radius:16px;overflow:hidden;
     background:radial-gradient(ellipse at 50% 118%,rgba(74,58,140,.45),transparent 60%),
                radial-gradient(ellipse at 18% 8%,rgba(40,90,160,.35),transparent 55%),
-               linear-gradient(180deg,#0a1430 0%,#0d1b3a 55%,#101f42 100%);
-    border:1px solid rgba(216,180,106,.20);box-shadow:inset 0 0 46px rgba(0,0,0,.4);}
-  .sky::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
-    background:radial-gradient(ellipse at 50% 52%,rgba(8,16,38,0) 32%,rgba(8,16,38,.58) 100%);}
-  .sky-stars{position:absolute;inset:0;z-index:0;}
-  .star{position:absolute;border-radius:50%;background:rgba(255,255,255,.24);
-    display:block;transition:background .5s,box-shadow .5s;
+               linear-gradient(180deg,#070f26 0%,#0b1834 55%,#101f42 100%);
+    border:1px solid rgba(216,180,106,.22);box-shadow:inset 0 0 50px rgba(0,0,0,.5),0 6px 24px rgba(0,0,0,.18);}
+  /* 缓慢漂移的星云 */
+  .sky::before{content:"";position:absolute;inset:-28%;z-index:0;pointer-events:none;
+    background:radial-gradient(ellipse at 32% 42%,rgba(96,74,186,.24),transparent 42%),
+               radial-gradient(ellipse at 72% 66%,rgba(38,116,196,.22),transparent 44%);
+    animation:skyDrift 26s ease-in-out infinite alternate;}
+  @keyframes skyDrift{0%{transform:translate(-3%,-2%) scale(1);}100%{transform:translate(4%,3%) scale(1.1);}}
+  /* 暗角：压暗边缘星星，中心留亮 */
+  .sky::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
+    background:radial-gradient(ellipse at 50% 50%,rgba(8,16,38,0) 34%,rgba(8,16,38,.6) 100%);}
+  .sky-stars{position:absolute;inset:0;z-index:1;}
+  .star{position:absolute;border-radius:50%;background:rgba(255,255,255,.26);display:block;
+    transition:background .5s,box-shadow .5s;
     animation:starTwinkle var(--tw,4s) ease-in-out infinite alternate;animation-delay:var(--dl,0s);}
   .star.lit{background:radial-gradient(circle,#FFF7DE,#F3DCAA 45%,#D8B46A);
-    box-shadow:0 0 8px 2px rgba(243,220,170,.85),0 0 18px 5px rgba(216,180,106,.42);}
-  .star.just-lit{animation:starLight .72s cubic-bezier(.2,.8,.2,1);}
-  @keyframes starTwinkle{0%{opacity:.4;}100%{opacity:1;}}
+    box-shadow:0 0 8px 2px rgba(243,220,170,.9),0 0 20px 6px rgba(216,180,106,.5);}
+  .star.just-lit{animation:starLight .8s cubic-bezier(.2,.8,.2,1);}
+  /* 点亮瞬间扩散的金色涟漪 */
+  .star.just-lit::after{content:"";position:absolute;left:50%;top:50%;width:5px;height:5px;
+    margin:-2.5px 0 0 -2.5px;border-radius:50%;border:1px solid rgba(255,238,190,.9);
+    animation:starRipple .95s ease-out forwards;}
+  @keyframes starRipple{0%{transform:scale(1);opacity:.95;}100%{transform:scale(11);opacity:0;}}
+  @keyframes starTwinkle{0%{opacity:.35;}100%{opacity:1;}}
   @keyframes starLight{0%{transform:scale(.2);opacity:.5;}
-    45%{transform:scale(2.2);opacity:1;}
+    45%{transform:scale(2.4);opacity:1;}
     100%{transform:scale(1);opacity:1;}}
-  .sky-core{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;text-align:center;
-    padding:10px 24px;border-radius:14px;background:radial-gradient(ellipse,rgba(8,16,38,.86),rgba(8,16,38,0) 74%);}
-  .checkin-num{font-size:56px;font-weight:800;line-height:1;color:var(--gold);
+  /* 偶尔划过的流星（位置/延时/时长内联在 HTML，三颗错开） */
+  .meteor{position:absolute;z-index:3;pointer-events:none;width:120px;height:1.5px;border-radius:2px;
+    background:linear-gradient(90deg,transparent,rgba(255,246,220,.95));
+    opacity:0;transform:rotate(45deg);animation:meteorFly 9s ease-in infinite;}
+  @keyframes meteorFly{0%{transform:translate3d(0,0,0) rotate(45deg);opacity:0;}
+    4%{opacity:1;}20%{transform:translate3d(300px,300px,0) rotate(45deg);opacity:0;}
+    100%{opacity:0;}}
+  /* 计数移到夜空下方，画面不再被文字遮挡 */
+  .ck-stat{margin:15px 0 0;font-size:14px;color:#cbb98f;letter-spacing:.4px;}
+  .ck-stat b{display:inline-block;font-size:30px;font-weight:800;line-height:1;margin:0 6px;vertical-align:-4px;
     background:linear-gradient(90deg,#F3DCAA,#D8B46A);-webkit-background-clip:text;background-clip:text;
-    -webkit-text-fill-color:transparent;filter:drop-shadow(0 0 12px rgba(216,180,106,.5));}
-  .checkin-label{font-size:12px;color:#cbb98f;margin:6px 0 0;letter-spacing:.5px;}
-  .checkin-btn{margin-top:18px;padding:11px 34px;font-size:15px;font-weight:700;color:#3A2A08;background:var(--gold);
+    -webkit-text-fill-color:transparent;filter:drop-shadow(0 0 10px rgba(216,180,106,.45));}
+  .ck-stat .ck-sub{color:var(--muted);font-size:12px;}
+  .checkin-btn{margin-top:16px;padding:11px 34px;font-size:15px;font-weight:700;color:#3A2A08;background:var(--gold);
     border:none;border-radius:11px;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.16),0 0 20px rgba(216,180,106,.3);transition:.15s;}
   .checkin-btn:hover{filter:brightness(1.08);}
   .checkin-btn:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.16);}
-  .checkin-msg{min-height:48px;margin:16px auto 0;max-width:460px;font-size:14px;line-height:1.7;color:#fff;}
-  .checkin-msg .pop{display:inline-block;animation:ckPop .42s ease;}
-  @keyframes ckPop{0%{transform:scale(.82) translateY(6px);opacity:0;}100%{transform:scale(1) translateY(0);opacity:1;}}
-  @media (prefers-reduced-motion:reduce){.checkin-msg .pop,.star,.star.just-lit{animation:none;}}
+  /* 鼓励语：金色发光卡片，滑入弹跳 + 一道光扫过 */
+  .checkin-msg{min-height:56px;margin:18px auto 0;max-width:480px;}
+  .checkin-msg .pop{position:relative;display:inline-block;overflow:hidden;
+    padding:10px 24px;border-radius:12px;font-size:14.5px;font-weight:600;letter-spacing:.3px;
+    color:#FFF3D6;background:linear-gradient(135deg,rgba(216,180,106,.20),rgba(216,180,106,.05));
+    border:1px solid rgba(243,220,170,.55);
+    box-shadow:0 0 22px rgba(216,180,106,.28),inset 0 0 14px rgba(216,180,106,.08);
+    animation:ckPop .55s cubic-bezier(.2,.9,.25,1);}
+  .checkin-msg .pop::after{content:"";position:absolute;top:0;left:-70%;width:45%;height:100%;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.42),transparent);
+    transform:skewX(-22deg);animation:ckShine 1.1s .18s ease-out;}
+  @keyframes ckPop{0%{transform:translateY(16px) scale(.88);opacity:0;}
+    62%{transform:translateY(-2px) scale(1.03);opacity:1;}
+    100%{transform:translateY(0) scale(1);opacity:1;}}
+  @keyframes ckShine{0%{left:-70%;}100%{left:135%;}}
+  @media (prefers-reduced-motion:reduce){.checkin-msg .pop,.checkin-msg .pop::after,.star,.star.just-lit,
+    .star.just-lit::after,.meteor,.sky::before{animation:none;}}
 </style>
 </head>
 <body>
@@ -734,7 +766,7 @@
           <button type="button" class="quote-btn" id="qtNext">换一条 ↻</button>
         </div>
       </section>
-      <!-- 08 国防打卡（一片夜空，每次打卡点亮一颗星 + 鼓励语 + 本地记忆） -->
+      <!-- 08 国防打卡（高级夜空：星云漂移+流星+点亮涟漪，计数在下方，鼓励语发光卡片） -->
       <section class="checkin card">
         <div class="sec-head">
           <span class="idx">08</span><h3>国防打卡</h3>
@@ -743,11 +775,11 @@
         <div class="checkin-box">
           <div class="sky" id="ckSky">
             <div class="sky-stars" id="ckStars"></div>
-            <div class="sky-core">
-              <div class="checkin-num" id="ckNum">0</div>
-              <div class="checkin-label">颗星已点亮 · 每一次都是一份国防心意</div>
-            </div>
+            <span class="meteor" style="left:8%;top:-10%;animation-delay:0s;animation-duration:9s;"></span>
+            <span class="meteor" style="left:40%;top:-14%;animation-delay:3.6s;animation-duration:12s;"></span>
+            <span class="meteor" style="left:70%;top:-8%;animation-delay:6.8s;animation-duration:10s;"></span>
           </div>
+          <div class="ck-stat">已点亮 <b id="ckNum">0</b> 颗星 <span class="ck-sub">· 每一次都是一份国防心意</span></div>
           <button type="button" class="checkin-btn" id="ckBtn">为国防点亮一颗星 ✦</button>
           <div class="checkin-msg" id="ckMsg"></div>
         </div>
