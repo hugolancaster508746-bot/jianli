@@ -480,10 +480,26 @@
     transform:translateX(-100%);animation:cardSheen 9s ease-in-out infinite;}
   @keyframes cardSheen{0%,72%{transform:translateX(-100%);opacity:0;}
     82%{opacity:.9;}100%{transform:translateX(100%);opacity:0;}}
+  /* ===== 背景动态光晕：几团柔光在页面背后缓缓漂移+呼吸，克制不抢内容 ===== */
+  body::after{content:"";position:fixed;inset:-25%;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(38% 32% at 22% 28%,rgba(46,124,192,.26),transparent 72%),
+      radial-gradient(34% 30% at 78% 22%,rgba(216,180,106,.13),transparent 72%),
+      radial-gradient(42% 36% at 66% 78%,rgba(38,116,196,.20),transparent 72%),
+      radial-gradient(30% 28% at 16% 82%,rgba(96,74,186,.18),transparent 72%);
+    background-size:180% 180%;
+    animation:auroraDrift 34s ease-in-out infinite alternate,
+              auroraBreathe 11s ease-in-out infinite alternate;
+    will-change:background-position,opacity;}
+  @keyframes auroraDrift{0%{background-position:0% 30%,100% 20%,80% 90%,10% 80%;}
+    100%{background-position:22% 55%,78% 45%,55% 70%,28% 60%;}}
+  @keyframes auroraBreathe{0%{opacity:.55;}100%{opacity:1;}}
   @media (prefers-reduced-motion:reduce){
     .main>.card,.main>.ask,.main>.hot,.main>.timely,.main>.story,.main>.quiz,.main>.quote,.main>.checkin,
-    .sec-head .idx,.main>.card::after{animation:none!important;}
+    .sec-head .idx,.main>.card::after,body::after{animation:none!important;}
+    body::after{opacity:.7;}
   }
+  @media print{body::after{display:none!important;}}
 
   /* 06 国防知识闯关：尺子式刻度进度 + 一次一题 */
   .quiz{padding:18px 22px 20px;}
@@ -616,6 +632,11 @@
     62%{transform:translateY(-2px) scale(1.03);opacity:1;}
     100%{transform:translateY(0) scale(1);opacity:1;}}
   @keyframes ckShine{0%{left:-70%;}100%{left:135%;}}
+  /* 重新开始：低调描边小按钮，不抢主按钮风头 */
+  .ck-reset{display:block;margin:14px auto 0;padding:6px 16px;font-size:11.5px;letter-spacing:.3px;
+    color:var(--muted);background:rgba(255,255,255,.03);border:1px dashed var(--line);
+    border-radius:999px;cursor:pointer;transition:.15s;}
+  .ck-reset:hover{color:var(--gold-lt);border-color:var(--gold);background:var(--gold-dim);}
   @media (prefers-reduced-motion:reduce){.checkin-msg .pop,.checkin-msg .pop::after,.star,.star.lit,.star.just-lit,
     .star.just-lit::after,.meteor,.sky::before{animation:none;}}
 </style>
@@ -813,6 +834,7 @@
           <div class="ck-stat">已点亮 <b id="ckNum">0</b> 颗星</div>
           <button type="button" class="checkin-btn" id="ckBtn">为国防点亮一颗星 ✦</button>
           <div class="checkin-msg" id="ckMsg"></div>
+          <button type="button" class="ck-reset" id="ckReset" title="清零重新点亮">↺ 重新开始</button>
         </div>
       </section>
     </div>
@@ -1637,7 +1659,8 @@ const STORY_DATA=[{"tag": "海防 · 守岛", "title": "一座岛，一面旗，
 /* ============ 08 国防打卡：一片夜空，每次打卡点亮一颗星 + 鼓励语 + localStorage ============ */
 (function(){
   const num=document.getElementById('ckNum'), btn=document.getElementById('ckBtn'),
-        msg=document.getElementById('ckMsg'), starsBox=document.getElementById('ckStars');
+        msg=document.getElementById('ckMsg'), starsBox=document.getElementById('ckStars'),
+        resetBtn=document.getElementById('ckReset');
   if(!btn) return;
   const KEY='zhanshi_checkins';
   const cheers=[
@@ -1710,6 +1733,16 @@ const STORY_DATA=[{"tag": "海防 · 守岛", "title": "一座岛，一面旗，
     light(Math.min(n,STAR_N), idx);
     let j=last; if(cheers.length>1){ while(j===last) j=Math.floor(Math.random()*cheers.length); } last=j;
     pop(cheers[j]);
+  };
+  /* 重新开始：确认后归零——熄灭全部星、清本机记录、清空鼓励语 */
+  if(resetBtn) resetBtn.onclick=()=>{
+    if(n<=0) return;                        /* 本来就是空的，无需确认 */
+    if(!window.confirm('要把星河归零、重新开始点亮吗？')) return;
+    n=0; last=-1;
+    if(num) num.textContent='0';
+    light(0, -1);                           /* 全部熄灭，且不触发爆闪 */
+    if(msg) msg.innerHTML='';
+    try{ localStorage.removeItem(KEY); }catch(e){}
   };
 })();
 
