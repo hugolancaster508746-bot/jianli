@@ -504,22 +504,43 @@
     border-radius:9px;cursor:pointer;background:rgba(255,255,255,.04);transition:.15s;}
   .quote-btn:hover{border-color:var(--gold);background:var(--gold-dim);color:#fff;}
 
-  /* 08 国防打卡 */
-  .checkin{padding:18px 22px 22px;text-align:center;}
+  /* 08 国防打卡 —— 一片夜空，每次打卡点亮一颗星 */
+  .checkin{padding:18px 22px 24px;text-align:center;}
   .checkin .sec-head{justify-content:center;}
-  .checkin-box{max-width:520px;margin:0 auto;}
-  .checkin-num{font-size:54px;font-weight:800;line-height:1;color:var(--gold);
+  .checkin-box{max-width:560px;margin:0 auto;}
+  /* 夜空 */
+  .sky{position:relative;height:216px;border-radius:16px;overflow:hidden;
+    background:radial-gradient(ellipse at 50% 118%,rgba(74,58,140,.45),transparent 60%),
+               radial-gradient(ellipse at 18% 8%,rgba(40,90,160,.35),transparent 55%),
+               linear-gradient(180deg,#0a1430 0%,#0d1b3a 55%,#101f42 100%);
+    border:1px solid rgba(216,180,106,.20);box-shadow:inset 0 0 46px rgba(0,0,0,.4);}
+  .sky::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:radial-gradient(ellipse at 50% 52%,rgba(8,16,38,0) 32%,rgba(8,16,38,.58) 100%);}
+  .sky-stars{position:absolute;inset:0;z-index:0;}
+  .star{position:absolute;border-radius:50%;background:rgba(255,255,255,.24);
+    display:block;transition:background .5s,box-shadow .5s;
+    animation:starTwinkle var(--tw,4s) ease-in-out infinite alternate;animation-delay:var(--dl,0s);}
+  .star.lit{background:radial-gradient(circle,#FFF7DE,#F3DCAA 45%,#D8B46A);
+    box-shadow:0 0 8px 2px rgba(243,220,170,.85),0 0 18px 5px rgba(216,180,106,.42);}
+  .star.just-lit{animation:starLight .72s cubic-bezier(.2,.8,.2,1);}
+  @keyframes starTwinkle{0%{opacity:.4;}100%{opacity:1;}}
+  @keyframes starLight{0%{transform:scale(.2);opacity:.5;}
+    45%{transform:scale(2.2);opacity:1;}
+    100%{transform:scale(1);opacity:1;}}
+  .sky-core{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;text-align:center;
+    padding:10px 24px;border-radius:14px;background:radial-gradient(ellipse,rgba(8,16,38,.86),rgba(8,16,38,0) 74%);}
+  .checkin-num{font-size:56px;font-weight:800;line-height:1;color:var(--gold);
     background:linear-gradient(90deg,#F3DCAA,#D8B46A);-webkit-background-clip:text;background-clip:text;
-    -webkit-text-fill-color:transparent;}
-  .checkin-label{font-size:12px;color:var(--muted);margin:6px 0 16px;}
-  .checkin-btn{padding:11px 34px;font-size:15px;font-weight:700;color:#3A2A08;background:var(--gold);
+    -webkit-text-fill-color:transparent;filter:drop-shadow(0 0 12px rgba(216,180,106,.5));}
+  .checkin-label{font-size:12px;color:#cbb98f;margin:6px 0 0;letter-spacing:.5px;}
+  .checkin-btn{margin-top:18px;padding:11px 34px;font-size:15px;font-weight:700;color:#3A2A08;background:var(--gold);
     border:none;border-radius:11px;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.16),0 0 20px rgba(216,180,106,.3);transition:.15s;}
   .checkin-btn:hover{filter:brightness(1.08);}
   .checkin-btn:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.16);}
-  .checkin-msg{min-height:48px;margin:18px auto 0;max-width:460px;font-size:14px;line-height:1.7;color:#fff;}
+  .checkin-msg{min-height:48px;margin:16px auto 0;max-width:460px;font-size:14px;line-height:1.7;color:#fff;}
   .checkin-msg .pop{display:inline-block;animation:ckPop .42s ease;}
   @keyframes ckPop{0%{transform:scale(.82) translateY(6px);opacity:0;}100%{transform:scale(1) translateY(0);opacity:1;}}
-  @media (prefers-reduced-motion:reduce){.checkin-msg .pop{animation:none;}}
+  @media (prefers-reduced-motion:reduce){.checkin-msg .pop,.star,.star.just-lit{animation:none;}}
 </style>
 </head>
 <body>
@@ -713,16 +734,21 @@
           <button type="button" class="quote-btn" id="qtNext">换一条 ↻</button>
         </div>
       </section>
-      <!-- 08 国防打卡（点击计数 + 鼓励语，本地记忆） -->
+      <!-- 08 国防打卡（一片夜空，每次打卡点亮一颗星 + 鼓励语 + 本地记忆） -->
       <section class="checkin card">
         <div class="sec-head">
           <span class="idx">08</span><h3>国防打卡</h3>
-          <span class="hint">点一下，攒起你的国防足迹</span>
+          <span class="hint">点一下，点亮一颗星，攒起你的国防星河</span>
         </div>
         <div class="checkin-box">
-          <div class="checkin-num" id="ckNum">0</div>
-          <div class="checkin-label">次打卡 · 每一次都是一份国防心意</div>
-          <button type="button" class="checkin-btn" id="ckBtn">为国防打个卡 ✦</button>
+          <div class="sky" id="ckSky">
+            <div class="sky-stars" id="ckStars"></div>
+            <div class="sky-core">
+              <div class="checkin-num" id="ckNum">0</div>
+              <div class="checkin-label">颗星已点亮 · 每一次都是一份国防心意</div>
+            </div>
+          </div>
+          <button type="button" class="checkin-btn" id="ckBtn">为国防点亮一颗星 ✦</button>
           <div class="checkin-msg" id="ckMsg"></div>
         </div>
       </section>
@@ -1534,10 +1560,10 @@ const QUOTES_DATA=[{"t": "名言", "c": "兵者，国之大事，死生之地，
   show();
 })();
 
-/* ============ 08 国防打卡：点击+1、随机鼓励语、localStorage 记忆 ============ */
+/* ============ 08 国防打卡：一片夜空，每次打卡点亮一颗星 + 鼓励语 + localStorage ============ */
 (function(){
   const num=document.getElementById('ckNum'), btn=document.getElementById('ckBtn'),
-        msg=document.getElementById('ckMsg');
+        msg=document.getElementById('ckMsg'), starsBox=document.getElementById('ckStars');
   if(!btn) return;
   const KEY='zhanshi_checkins';
   const cheers=[
@@ -1552,18 +1578,51 @@ const QUOTES_DATA=[{"t": "名言", "c": "兵者，国之大事，死生之地，
     '你又为国防教育累积了一份力量，继续加油！',
     '家国情怀在线，国防路上又前进一大步！'
   ];
+  const STAR_N=88;                 /* 星海星点总数 */
+  /* 确定性伪随机：同一颗星每次刷新位置一致，刷新后已点亮的星不会乱跳 */
+  function rnd(i,salt){ const x=Math.sin((i+1)*12.9898+(salt||0)*78.233)*43758.5453; return x-Math.floor(x); }
+  const stars=[];
+  (function buildStars(){
+    if(!starsBox) return;
+    const frag=document.createDocumentFragment();
+    for(let i=0;i<STAR_N;i++){
+      const d=document.createElement('i');
+      d.className='star';
+      const sz=1+rnd(i,1)*2.2;
+      d.style.width=sz.toFixed(2)+'px'; d.style.height=sz.toFixed(2)+'px';
+      d.style.left=(2+rnd(i,2)*96).toFixed(2)+'%';
+      d.style.top=(4+rnd(i,3)*90).toFixed(2)+'%';
+      d.style.setProperty('--tw',(2.6+rnd(i,4)*3.4).toFixed(2)+'s');
+      d.style.setProperty('--dl',(rnd(i,5)*4).toFixed(2)+'s');
+      frag.appendChild(d); stars.push(d);
+    }
+    starsBox.appendChild(frag);
+  })();
+  function light(count, flashIdx){
+    for(let i=0;i<stars.length;i++){
+      const on=i<count;
+      stars[i].classList.toggle('lit',on);
+      if(on && i===flashIdx){
+        stars[i].classList.remove('just-lit'); void stars[i].offsetWidth; stars[i].classList.add('just-lit');
+      } else if(!on){ stars[i].classList.remove('just-lit'); }
+    }
+  }
   let n=0; try{ n=parseInt(localStorage.getItem(KEY)||'0',10)||0; }catch(e){ n=0; }
+  if(n<0) n=0;
   if(num) num.textContent=String(n);
+  light(Math.min(n,STAR_N), -1);   /* 刷新后按已打卡数点亮，位置不变 */
   let last=-1;
   function pop(text){
     if(!msg) return;
     msg.innerHTML='';
-    const sp=document.createElement('span'); sp.className='pop'; sp.textContent='🎖 '+text;
+    const sp=document.createElement('span'); sp.className='pop'; sp.textContent='✦ '+text;
     msg.appendChild(sp);
   }
   btn.onclick=()=>{
     n++; if(num) num.textContent=String(n);
     try{ localStorage.setItem(KEY,String(n)); }catch(e){}
+    const idx=(n-1)%STAR_N;                 /* 超过星数后循环，仍每次点亮一颗 */
+    light(Math.min(n,STAR_N), idx);
     let j=last; if(cheers.length>1){ while(j===last) j=Math.floor(Math.random()*cheers.length); } last=j;
     pop(cheers[j]);
   };
