@@ -202,15 +202,18 @@
   .quick button:hover{border-style:solid;border-color:var(--gold);color:#fff;background:var(--gold-dim);}
 
   /* 02 答案区 */
-  .answer{padding:20px 22px;position:relative;overflow:hidden;}
-  .answer::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
-    background:linear-gradient(180deg,var(--gold),var(--navy2));opacity:.9;}
-  .answer .a-label{font-size:11px;letter-spacing:.16em;color:var(--gold);
+  .answer-inner{position:relative;margin-top:18px;padding-top:18px;border-top:1px dashed var(--line);}
+  .answer-inner::before{content:"讲解员作答";position:absolute;right:2px;top:-9px;
+    font-size:10.5px;letter-spacing:.12em;color:var(--gold-lt);
+    background:linear-gradient(180deg,#0c2340,#0a1d38);padding:0 10px;}
+  .answer-inner:not(.active) .a-label,.answer-inner:not(.active) .q-title,
+  .answer-inner:not(.active) .subs,.answer-inner:not(.active) .src-line{display:none;}
+  .answer-inner .a-label{font-size:11px;letter-spacing:.16em;color:var(--gold);
     text-transform:uppercase;margin-bottom:8px;}
-  .answer .q-title{font-size:16px;font-weight:600;color:#fff;margin:0 0 12px;line-height:1.5;}
-  .answer .q-title .qn{display:inline-block;font-size:11px;font-weight:700;color:#3A2A08;
+  .answer-inner .q-title{font-size:16px;font-weight:600;color:#fff;margin:0 0 12px;line-height:1.5;}
+  .answer-inner .q-title .qn{display:inline-block;font-size:11px;font-weight:700;color:#3A2A08;
     background:var(--gold);border-radius:6px;padding:2px 7px;margin-right:9px;vertical-align:2px;}
-  .answer .q-title .ph{color:var(--faint);font-weight:400;font-size:14px;}
+  .answer-inner .q-title .ph{color:var(--faint);font-weight:400;font-size:14px;}
   .src-tag{font-size:11px;color:var(--gold-lt);font-weight:400;margin-left:10px;
     border:1px solid var(--line);padding:1px 8px;border-radius:5px;vertical-align:2px;white-space:nowrap;}
   .ainote{margin:0 0 12px;padding:8px 11px;font-size:12.5px;line-height:1.7;
@@ -294,7 +297,7 @@
     .gate h2{font-size:22px;}
     .hot-grid{grid-template-columns:1fr;}
     .src{margin-left:0;width:100%;}
-    .ask,.answer{padding:16px 14px;}
+     .ask{padding:16px 14px;}
     .ask-row{flex-direction:column;gap:9px;}
     .ask-row input{width:100%;font-size:16px;padding:13px 14px;min-height:48px;}
     .ask-row button{width:100%;font-size:16px;padding:14px 16px;min-height:48px;}
@@ -312,7 +315,7 @@
     .stage{display:block!important;}
     .card,.portrait-card,.achieve{background:#fff!important;color:#111!important;
       border:1px solid #CCC!important;box-shadow:none!important;backdrop-filter:none!important;}
-    .sec-head h3,.p-head .name,.achieve h3,.answer .q-title,.q-card .tx{color:#111!important;}
+    .sec-head h3,.p-head .name,.achieve h3,.answer-inner .q-title,.q-card .tx{color:#111!important;}
     .subs{background:#F5F7FA!important;color:#111!important;}
     .subs span,.subs span.done,.src,.src-line,.src-line span,.status,.sec-head .hint,
     .achieve li,.achieve .ref-list li,.achieve .ref-title,footer{color:#444!important;}
@@ -584,12 +587,15 @@
     animation:starBreathe var(--tw,4s) ease-in-out infinite alternate,
               starFloat var(--fd,11s) ease-in-out infinite alternate;
     animation-delay:var(--dl,0s),calc(var(--dl,0s) + 1.3s);}
-  .star.just-lit{animation:starLight .8s cubic-bezier(.2,.8,.2,1);}
-  /* 点亮瞬间扩散的金色涟漪 */
-  .star.just-lit::after{content:"";position:absolute;left:50%;top:50%;width:5px;height:5px;
-    margin:-2.5px 0 0 -2.5px;border-radius:50%;border:1px solid rgba(255,238,190,.9);
-    animation:starRipple .95s ease-out forwards;}
-  @keyframes starRipple{0%{transform:scale(1);opacity:.95;}100%{transform:scale(11);opacity:0;}}
+  .star.just-lit{animation:starLight 1s cubic-bezier(.22,.68,.2,1);}
+  /* 点亮瞬间：两圈柔光缓缓漾开（柔边、不刺眼） */
+  .star.just-lit::after{content:"";position:absolute;left:50%;top:50%;width:6px;height:6px;
+    margin:-3px 0 0 -3px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,240,200,.55),rgba(243,220,170,.18) 55%,transparent 72%);
+    box-shadow:0 0 0 1px rgba(255,238,190,.35);
+    animation:starRipple 1.15s ease-out forwards;}
+  @keyframes starRipple{0%{transform:scale(.6);opacity:0;}
+    18%{opacity:.95;}100%{transform:scale(7);opacity:0;}}
   @keyframes starTwinkle{0%{opacity:.35;}100%{opacity:1;}}
   /* 缓慢漂浮：每颗星按自己的幅度与周期在原地附近游走，整片星海像在流动 */
   @keyframes starFloat{0%{transform:translate(calc(var(--fx,2px)*-1),calc(var(--fy,2px)*-1));}
@@ -597,8 +603,9 @@
   /* 呼吸星闪：已点亮的星光晕一张一合、明暗交替，柔和而不刺眼 */
   @keyframes starBreathe{0%{opacity:.72;box-shadow:0 0 5px 1px rgba(243,220,170,.45),0 0 12px 3px rgba(216,180,106,.28);}
     100%{opacity:1;box-shadow:0 0 11px 3px rgba(243,220,170,1),0 0 24px 8px rgba(216,180,106,.6);}}
-  @keyframes starLight{0%{transform:scale(.2);opacity:.5;}
-    45%{transform:scale(2.4);opacity:1;}
+  @keyframes starLight{0%{transform:scale(.85);opacity:.7;}
+    38%{transform:scale(1.85);opacity:1;}
+    66%{transform:scale(1.18);opacity:1;}
     100%{transform:scale(1);opacity:1;}}
   /* 偶尔划过的流星（位置/延时/时长内联在 HTML，三颗错开） */
   .meteor{position:absolute;z-index:3;pointer-events:none;width:120px;height:1.5px;border-radius:2px;
@@ -639,6 +646,53 @@
   .ck-reset:hover{color:var(--gold-lt);border-color:var(--gold);background:var(--gold-dim);}
   @media (prefers-reduced-motion:reduce){.checkin-msg .pop,.checkin-msg .pop::after,.star,.star.lit,.star.just-lit,
     .star.just-lit::after,.meteor,.sky::before{animation:none;}}
+</style>
+<style>
+  /* ===== 主题插画：作为各板块淡淡背景，让版面不死板 ===== */
+  .main>.card{background-blend-mode:normal;}
+  .main>.ask::before,.main>.hot::before,.main>.timely::before,.main>.story::before,
+  .main>.quiz::before,.main>.quote::before,.main>.checkin::before{
+    content:"";position:absolute;inset:0;z-index:0;pointer-events:none;border-radius:inherit;
+    background-repeat:no-repeat;opacity:.14;transition:opacity .5s;}
+  /* 提问区：地球 + 信号塔，居右下 */
+  .main>.ask::before{background-image:url('art/planet.webp');background-size:72% auto;
+    background-position:right -8% bottom -30%;opacity:.16;}
+  /* 热门问答：盾牌科技，居右下 */
+  .main>.hot::before{background-image:url('art/shield.webp');background-size:60% auto;
+    background-position:right -6% bottom -34%;opacity:.12;}
+  /* 时政瞭望：战机航母，居右上 */
+  .main>.timely::before{background-image:url('art/carrier.webp');background-size:66% auto;
+    background-position:right -4% top -18%;opacity:.13;}
+  /* 国防故事：长城月夜，居右下 */
+  .main>.story::before{background-image:url('art/greatwall.webp');background-size:64% auto;
+    background-position:right -6% bottom -26%;opacity:.15;}
+  /* 知识闯关：盾牌，居左下（避开题目） */
+  .main>.quiz::before{background-image:url('art/shield.webp');background-size:52% auto;
+    background-position:left -8% bottom -40%;opacity:.10;}
+  /* 名言撷英：地球星轨，居右上 */
+  .main>.quote::before{background-image:url('art/planet.webp');background-size:58% auto;
+    background-position:right -6% top -30%;opacity:.12;}
+  /* 星河印记：长城星夜，居右下（星海在上层不会被盖） */
+  .main>.checkin::before{background-image:url('art/greatwall.webp');background-size:70% auto;
+    background-position:right -8% bottom -34%;opacity:.11;}
+  /* 内容始终压在插画之上 */
+  .main>.card>*{position:relative;z-index:1;}
+  @media (max-width:720px){
+    .main>.ask::before,.main>.hot::before,.main>.timely::before,.main>.story::before,
+    .main>.quiz::before,.main>.quote::before,.main>.checkin::before{opacity:.08;background-size:90% auto;}
+  }
+  @media print{.main>.card::before{display:none!important;}}
+
+  /* ===== 滚动显现：滚到视口才播放上浮淡入，肉眼看得见层次 ===== */
+  .js-reveal .main>.card,.js-reveal>.reveal{opacity:0;transform:translateY(26px);
+    animation:none;}
+  .js-reveal .main>.card.in,.js-reveal>.reveal.in{
+    animation:secRiseIn .68s cubic-bezier(.2,.72,.25,1) forwards;}
+  @keyframes secRiseIn{from{opacity:0;transform:translateY(26px);}
+    to{opacity:1;transform:none;}}
+  @media (prefers-reduced-motion:reduce){
+    .js-reveal .main>.card,.js-reveal>.reveal{opacity:1;transform:none;animation:none!important;}
+  }
 </style>
 </head>
 <body>
@@ -699,10 +753,6 @@
       </div>
       <div class="wave" id="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
       <div class="status" id="status">待机中 · 请向我提问</div>
-      <div class="voice-row">
-        <span class="lab">讲解音色 · 4 位男声（点一下试听）</span>
-        <div class="voice-opts" id="voiceOpts"></div>
-      </div>
       <div class="mini-btns">
         <button id="sampleBtn">试听样音</button>
         <button id="stopBtn">停止</button>
@@ -711,11 +761,11 @@
 
     <!-- 右：主区 -->
     <div class="main">
-      <!-- 01 自由提问 -->
-      <section class="ask card">
+      <!-- 01 智能问答：提问 + 讲解员作答合为一体（一问一答） -->
+      <section class="ask card" id="askCard">
         <div class="sec-head">
           <span class="idx">01</span><h3>智询问答</h3>
-          <span class="hint">想问什么，直接写</span>
+          <span class="hint">一问一答 · 想问什么直接写</span>
         </div>
         <p class="ainote" id="aiNote"></p>
         <div class="ask-row">
@@ -728,27 +778,25 @@
           <button>大学生能为国防做些什么？</button>
           <button>什么是总体国家安全观？</button>
         </div>
-      </section>
-
-      <!-- 02 讲解员回答 -->
-      <section class="answer card" id="answer">
-        <div class="a-label">讲解员 · 砺剑</div>
-        <p class="q-title" id="aQ"><span class="ph">答案会在这里逐句显示并同步朗读</span></p>
-        <div class="subs" id="subs"><span class="ph">提问后，答案会按句高亮、人物同步做出聆听 / 思考 / 讲解动作。</span></div>
-        <div class="src-line" id="aSrc">资料依据：<span>公开权威资料整理 · 内容由人工智能生成，以官方表述为准</span></div>
-        <div class="a-foot">
-          <button id="replayBtn">再听一遍</button>
-          <button class="ghost" id="followBtn">换个问题</button>
-          
+        <!-- 讲解员作答区（原独立 02，已并入智能问答） -->
+        <div class="answer-inner" id="answer">
+          <div class="a-label">讲解员 · 砺剑</div>
+          <p class="q-title" id="aQ"><span class="ph">答案会在这里逐句显示并同步朗读</span></p>
+          <div class="subs" id="subs"><span class="ph">提问后，答案会按句高亮、人物同步做出聆听 / 思考 / 讲解动作。</span></div>
+          <div class="src-line" id="aSrc">资料依据：<span>公开权威资料整理 · 内容由人工智能生成，以官方表述为准</span></div>
+          <div class="a-foot">
+            <button id="replayBtn">再听一遍</button>
+            <button class="ghost" id="followBtn">换个问题</button>
+          </div>
         </div>
       </section>
 
       <!-- 主次分隔：上方是主讲区，下方是选看引导区 -->
       <div class="zone-split"><span>下面是引导区 · 挑一个也能讲</span></div>
-      <!-- 03 大家都在问（下方引导） -->
+      <!-- 02 大家都在问（下方引导） -->
       <section class="hot card">
         <div class="sec-head">
-          <span class="idx">03</span><h3>热门问答</h3>
+          <span class="idx">02</span><h3>热门问答</h3>
           <span class="hint">从大家关心的问题里挑一个</span>
         </div>
         <div class="tabs" id="tabs"></div>
@@ -758,7 +806,7 @@
       <!-- C 近五年国防时政（用户拍板扩展） -->
       <section class="timely card">
         <div class="sec-head">
-          <span class="idx">04</span><h3>时政瞭望</h3>
+          <span class="idx">03</span><h3>时政瞭望</h3>
           <span class="hint">2021—2026 权威大事 · 点卡片现场讲解</span>
         </div>
         <div class="timely-grid">
@@ -775,7 +823,7 @@
       <!-- 05 国防故事（单次一个，换一个随机刷新） -->
       <section class="story card">
         <div class="sec-head">
-          <span class="idx">05</span><h3>国防故事</h3>
+          <span class="idx">04</span><h3>国防故事</h3>
           <span class="hint">真人真事 · 换一个，点讲解员细讲</span>
         </div>
         <div class="story-focus" id="stFocus">
@@ -788,7 +836,7 @@
       <!-- 06 国防知识闯关（135题，一次一题，判题给答案） -->
       <section class="quiz card">
         <div class="sec-head">
-          <span class="idx">06</span><h3>知识闯关</h3>
+          <span class="idx">05</span><h3>知识闯关</h3>
           <span class="hint">一次一题 · 答完即判</span>
         </div>
         <div class="quiz-wrap">
@@ -807,7 +855,7 @@
       <!-- 07 名言园地（名言/古诗/谚语/典故，一次一条） -->
       <section class="quote card">
         <div class="sec-head">
-          <span class="idx">07</span><h3>名言撷英</h3>
+          <span class="idx">06</span><h3>名言撷英</h3>
           <span class="hint">名言·古诗·谚语·典故 · 点卡片换一条</span>
         </div>
         <div class="quote-card" id="qtCard" title="点一下，换一条">
@@ -821,7 +869,7 @@
       <!-- 08 国防打卡（高级夜空：星云漂移+流星+点亮涟漪，计数在下方，鼓励语发光卡片） -->
       <section class="checkin card">
         <div class="sec-head">
-          <span class="idx">08</span><h3>星河印记</h3>
+          <span class="idx">07</span><h3>星河印记</h3>
           <span class="hint">点亮一颗星，攒起你的国防星河</span>
         </div>
         <div class="checkin-box">
@@ -840,7 +888,7 @@
     </div>
   </div>
 
-  <section class="achieve"><h3>关于这个展厅</h3><input type="checkbox" id="foldChk"><div class="foldmax"><div style="background:#fff5e4;border-left:4px solid #b8862b;border-radius:0 8px 8px 0;padding:10px 14px;margin:0 0 12px;font-size:13px;line-height:1.85;color:#7a3c00">本展厅为公网 AI 版：自由提问现场生成、时政自动联网核实，12 条精修问答与讲解员动作均为兜底与演示。以下为完整设计说明。</div><ul><li>12 条热门问题依据 2024 年新修订《中华人民共和国国防教育法》等 8 部公开权威法律法规与政策文件人工精修，每条答案都标注具体出处，下方列有完整依据清单；点一下即答，不联网也能完整演示。</li><li>讲解音频由 4 位中文男声预先合成，逐句字幕按音频时间轴精确高亮；音频文件不在时自动回落到浏览器朗读，仍能完整演示。</li><li>已接入两个大模型：阿里通义千问百炼主用、腾讯云 TokenHub 备用；后台按额度与超时自动切换，观众无感、页面不出现模型菜单。</li><li>每个自由提问都先交给 AI：随问附上 8 部权威依据清单与最贴近的 2 条参考口径，由 AI 判断该引哪部文件后现场组织一段新答案，再经过范围限定、资料随问附带、输出复检三道闸；越界问题礼貌拒答并引回国防教育主题。</li><li>说清边界：这里的「定位」是在随问附带的权威依据清单里定位依据文件，不是实时上网搜网页。AI 用的是自身已有知识加我们给的清单，不会引用今天刚发布的新闻，知识也有截止时间。</li><li>想要真·实时检索：双击「启动展厅-联网搜索版.bat」可启用联网搜索版，让 AI 现搜网页再作答。该能力默认关闭、按次单独计费，且搜到的内容未经人工审核，正式汇报建议先试问再决定用不用。</li><li>页面固定标注资料来源与 AI 生成内容标识；不收集姓名、学号、手机号，提问内容不落盘。</li><li>当前为演示版：接线后每个自由提问都由 AI 现场生成答案，12 条预置答案只在断网 / 超时 / 失败时兜底并明确标注；纯本地页不发任何请求；展示档 / 演示档两档设计与公网合规做法见方案书第五章。</li></ul><div class="ref-title">权威资料依据 · 每条答案下方标注到具体条款</div><ol class="ref-list"><li>《中华人民共和国国防教育法》（2024 年 9 月 13 日修订，2024 年 9 月 21 日起施行）· 中国政府网全文</li><li>《中华人民共和国国防法》（2020 年 12 月 26 日修订，2021 年 1 月 1 日起施行）· 国防部</li><li>《中华人民共和国国家安全法》（2015 年 7 月 1 日起施行）</li><li>《中华人民共和国兵役法》（2021 年修订）</li><li>《中华人民共和国国防动员法》（2010 年 7 月 1 日起施行）</li><li>国务院新闻办公室《新时代的中国国防》白皮书（2019 年 7 月 24 日）</li><li>中共中央、国务院、中央军委《关于加强和改进新时代全民国防教育工作的意见》（2022 年）</li><li>中共中央、国务院《新时代爱国主义教育实施纲要》（2019 年）；党的二十大报告「深化全民国防教育」</li></ol></div><label class="fold-toggle" for="foldChk"><span class="fold-more">展开完整说明 ▾</span><span class="fold-less">收起说明 ▴</span></label></section>
+  <section class="achieve"><h3>关于这个展厅</h3><input type="checkbox" id="foldChk"><div class="foldmax"><div style="background:#fff5e4;border-left:4px solid #b8862b;border-radius:0 8px 8px 0;padding:10px 14px;margin:0 0 12px;font-size:13px;line-height:1.85;color:#7a3c00">本展厅为公网 AI 版：自由提问现场生成、时政自动联网核实，12 条精修问答与讲解员动作均为兜底与演示。以下为完整设计说明。</div><ul><li>12 条热门问题依据 2024 年新修订《中华人民共和国国防教育法》等 8 部公开权威法律法规与政策文件人工精修，每条答案都标注具体出处，下方列有完整依据清单；点一下即答，不联网也能完整演示。</li><li>讲解音频由专属克隆男声预先合成，逐句字幕按音频时间轴精确高亮；音频文件不在时自动回落到浏览器朗读，仍能完整演示。</li><li>已接入两个大模型：阿里通义千问百炼主用、腾讯云 TokenHub 备用；后台按额度与超时自动切换，观众无感、页面不出现模型菜单。</li><li>每个自由提问都先交给 AI：随问附上 8 部权威依据清单与最贴近的 2 条参考口径，由 AI 判断该引哪部文件后现场组织一段新答案，再经过范围限定、资料随问附带、输出复检三道闸；越界问题礼貌拒答并引回国防教育主题。</li><li>说清边界：这里的「定位」是在随问附带的权威依据清单里定位依据文件，不是实时上网搜网页。AI 用的是自身已有知识加我们给的清单，不会引用今天刚发布的新闻，知识也有截止时间。</li><li>想要真·实时检索：双击「启动展厅-联网搜索版.bat」可启用联网搜索版，让 AI 现搜网页再作答。该能力默认关闭、按次单独计费，且搜到的内容未经人工审核，正式汇报建议先试问再决定用不用。</li><li>页面固定标注资料来源与 AI 生成内容标识；不收集姓名、学号、手机号，提问内容不落盘。</li><li>当前为演示版：接线后每个自由提问都由 AI 现场生成答案，12 条预置答案只在断网 / 超时 / 失败时兜底并明确标注；纯本地页不发任何请求；展示档 / 演示档两档设计与公网合规做法见方案书第五章。</li></ul><div class="ref-title">权威资料依据 · 每条答案下方标注到具体条款</div><ol class="ref-list"><li>《中华人民共和国国防教育法》（2024 年 9 月 13 日修订，2024 年 9 月 21 日起施行）· 中国政府网全文</li><li>《中华人民共和国国防法》（2020 年 12 月 26 日修订，2021 年 1 月 1 日起施行）· 国防部</li><li>《中华人民共和国国家安全法》（2015 年 7 月 1 日起施行）</li><li>《中华人民共和国兵役法》（2021 年修订）</li><li>《中华人民共和国国防动员法》（2010 年 7 月 1 日起施行）</li><li>国务院新闻办公室《新时代的中国国防》白皮书（2019 年 7 月 24 日）</li><li>中共中央、国务院、中央军委《关于加强和改进新时代全民国防教育工作的意见》（2022 年）</li><li>中共中央、国务院《新时代爱国主义教育实施纲要》（2019 年）；党的二十大报告「深化全民国防教育」</li></ol></div><label class="fold-toggle" for="foldChk"><span class="fold-more">展开完整说明 ▾</span><span class="fold-less">收起说明 ▴</span></label></section>
 
   <footer>
     <div class="line">
@@ -1177,6 +1225,7 @@ function next(){
 /* ---------- 一次回答：聆听 → 思考 → 讲解 → 归位 ---------- */
 function presentAnswer(item, title, audioKey, sents, tag, basis, instant){
   stopAll();
+  const ansBox=document.getElementById('answer'); if(ansBox) ansBox.classList.add('active');
   curItem=item; curKey=audioKey; curTitle=title; curSents=sents; curTag=tag||'';
   const qEl=document.getElementById('aQ'); qEl.textContent='';
   if(item){ const n=document.createElement('span'); n.className='qn'; n.textContent=item.id; qEl.appendChild(n); }
@@ -1426,22 +1475,9 @@ function drawGrid(){
 }
 drawGrid();
 
-/* ---------- 4 位真男声切换 ---------- */
-const voiceBox=document.getElementById('voiceOpts');
-function drawVoices(){
-  voiceBox.innerHTML='';
-  VOICES.forEach(v=>{
-    const b=document.createElement('button');
-    b.textContent=v.label; b.title=v.desc;
-    b.className=v.id===voiceId?'active':'';
-    b.onclick=()=>{
-      voiceId=v.id; localStorage.setItem('lj_voice',voiceId); drawVoices();
-      presentAnswer(null, '音色试听 · '+v.label, 'sample', splitSentences(SAMPLE));
-    };
-    voiceBox.appendChild(b);
-  });
-}
-drawVoices();
+/* ---------- 音色固定为唯一的克隆男声（原切换选择器已移除） ---------- */
+voiceId = DEFAULT_VOICE || (VOICES[0]&&VOICES[0].id);
+try{ localStorage.setItem('lj_voice',voiceId); }catch(e){}
 
 /* ---------- 事件绑定 ---------- */
 /* 首屏说明：接线与否显示不同文案，避免观众误以为 AI 坏了 */
@@ -1708,7 +1744,7 @@ const STORY_DATA=[{"tag": "海防 · 守岛", "title": "一座岛，一面旗，
         /* 点亮瞬间放涟漪，动画结束后移除临时类，让这颗星继续轻微闪烁（不再永久定格） */
         st.classList.remove('just-lit'); void st.offsetWidth; st.classList.add('just-lit');
         clearTimeout(st._litTimer);
-        st._litTimer=setTimeout(()=>{ st.classList.remove('just-lit'); },820);
+        st._litTimer=setTimeout(()=>{ st.classList.remove('just-lit'); },1160);
       } else if(!on){
         st.classList.remove('just-lit');
         clearTimeout(st._litTimer);
@@ -1744,6 +1780,25 @@ const STORY_DATA=[{"tag": "海防 · 守岛", "title": "一座岛，一面旗，
     if(msg) msg.innerHTML='';
     try{ localStorage.removeItem(KEY); }catch(e){}
   };
+})();
+
+
+/* 滚动显现：元素进入视口才加 .in，触发上浮淡入（解决"看不到动效"——原先加载即播完） */
+(function(){
+  if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var root=document.body;
+  var cards=[].slice.call(document.querySelectorAll('.main>.card'));
+  if(!cards.length || !('IntersectionObserver' in window)){ return; }
+  root.classList.add('js-reveal');
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  },{rootMargin:'0px 0px -8% 0px',threshold:0.08});
+  cards.forEach(function(c,i){ /* 首屏第一张不隐藏，避免开屏空白 */
+    if(i===0){ c.classList.add('in'); }
+    io.observe(c);
+  });
 })();
 
 </script>
