@@ -481,12 +481,16 @@
   .sec-head .idx{animation:idxBreath 4.2s ease-in-out infinite;}
   @keyframes idxBreath{0%,100%{box-shadow:0 0 0 rgba(216,180,106,0);}
     50%{box-shadow:0 0 12px 1px rgba(216,180,106,.45);}}
-  /* 卡片顶部一道极淡的流光，极慢扫过，增加质感 */
-  .main>.card::after{content:"";position:absolute;left:0;right:0;top:0;height:1px;pointer-events:none;
-    background:linear-gradient(90deg,transparent,rgba(243,220,170,.55),transparent);
-    transform:translateX(-100%);animation:cardSheen 9s ease-in-out infinite;}
-  @keyframes cardSheen{0%,72%{transform:translateX(-100%);opacity:0;}
-    82%{opacity:.9;}100%{transform:translateX(100%);opacity:0;}}
+  /* 液态玻璃流动反光层：一条宽幅斜向高光浮在玻璃表面缓缓扫过，提亮不遮字 */
+  .main>.card::after{content:"";position:absolute;inset:-30% -10%;z-index:3;pointer-events:none;
+    background:linear-gradient(112deg,transparent 33%,rgba(255,255,255,.04) 42%,
+      rgba(235,248,255,.16) 48%,rgba(250,253,255,.30) 50%,rgba(235,248,255,.16) 52%,
+      rgba(255,255,255,.04) 58%,transparent 67%);
+    mix-blend-mode:screen;transform:translateX(-70%);
+    animation:cardSheen 7s ease-in-out infinite;}
+  @keyframes cardSheen{0%{transform:translateX(-70%);opacity:0;}
+    12%{opacity:1;}58%{transform:translateX(70%);opacity:1;}
+    72%{opacity:0;}100%{transform:translateX(70%);opacity:0;}}
   /* ===== 背景动态光晕：几团大柔光在页面背后缓缓漂移+呼吸，明显但不抢内容 ===== */
   body::after{content:"";position:fixed;inset:-30%;z-index:0;pointer-events:none;
     background:
@@ -753,6 +757,57 @@
   /* 减少动效/打印：玻璃质感保留（静态），打印时关闭保证纸质清晰 */
   @media print{
     .gate,.card,.portrait-card{background:#fff!important;box-shadow:none!important;backdrop-filter:none!important;}
+  }
+</style>
+<style>
+  /* —— 内页卡片：一条宽幅斜向反光带在玻璃表面缓缓流动 —— */
+  .card,.portrait-card{
+    background-image:
+      linear-gradient(112deg,transparent 28%,rgba(255,255,255,.05) 38%,rgba(230,245,255,.16) 46%,rgba(245,251,255,.42) 50%,rgba(230,245,255,.16) 54%,rgba(255,255,255,.05) 62%,transparent 72%);
+    background-size:300% 100%;
+    background-repeat:no-repeat;}
+  @keyframes glassFlow{
+    0%{background-position:130% 0;}
+    55%{background-position:-30% 0;}
+    100%{background-position:130% 0;}}
+  /* 流动 + 边缘呼吸统一在主卡片规则声明，避免被滚动显现动画覆盖 */
+  .main>.card{animation:glassFlow 7s ease-in-out infinite, edgeGlow 7s ease-in-out infinite;}
+  @keyframes edgeGlow{
+    0%,100%{border-color:rgba(206,232,255,.34);}
+    50%{border-color:rgba(238,248,255,.72);}}
+
+  /* —— 封面：宽幅反光带在面板上流动 + 光晕大幅漂移 —— */
+  .gate{
+    background-image:
+      linear-gradient(112deg,transparent 26%,rgba(255,255,255,.06) 37%,rgba(235,246,255,.20) 46%,rgba(248,252,255,.40) 50%,rgba(235,246,255,.20) 54%,rgba(255,255,255,.06) 63%,transparent 74%),
+      linear-gradient(180deg,rgba(255,255,255,.26),rgba(255,255,255,0) 28%);
+    background-size:300% 100%,100% 100%;
+    background-repeat:no-repeat;
+    animation:gateGlassFlow 9s ease-in-out infinite;}
+  @keyframes gateGlassFlow{
+    0%{background-position:140% 0,0 0;}
+    55%{background-position:-40% 0,0 0;}
+    100%{background-position:140% 0,0 0;}}
+  /* 封面内部光晕大胆漂移，液体般流动 */
+  .gate::after{animation:gateAurora 14s ease-in-out infinite alternate;}
+  @keyframes gateAurora{
+    0%{transform:translateX(-32%) translateY(8px) scale(1);opacity:.7;}
+    100%{transform:translateX(38%) translateY(-10px) scale(1.3);opacity:1;}}
+
+  /* 滚动显现优先级：.in 时重播上浮，同时保留流动（合并动画，避免被覆盖） */
+  .js-reveal .main>.card.in{
+    animation:secRiseIn .68s cubic-bezier(.2,.72,.25,1) forwards,
+              glassFlow 7s ease-in-out infinite .68s,
+              edgeGlow 7s ease-in-out infinite .68s;}
+
+  /* 减少动效：关掉流动，回到静态玻璃 */
+  @media (prefers-reduced-motion:reduce){
+    .card,.portrait-card,.gate,.gate::after,.main>.card,.js-reveal .main>.card.in{
+      animation:none!important;}
+    .card,.portrait-card{background-image:none;}
+  }
+  @media print{
+    .card,.portrait-card,.gate,.gate::after,.main>.card,.js-reveal .main>.card.in{animation:none!important;}
   }
 </style>
 </head>
