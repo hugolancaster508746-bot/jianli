@@ -481,34 +481,42 @@
   .sec-head .idx{animation:idxBreath 4.2s ease-in-out infinite;}
   @keyframes idxBreath{0%,100%{box-shadow:0 0 0 rgba(216,180,106,0);}
     50%{box-shadow:0 0 12px 1px rgba(216,180,106,.45);}}
-  /* 液态玻璃流动反光层：一条宽幅斜向高光浮在玻璃表面缓缓扫过，提亮不遮字 */
-  .main>.card::after{content:"";position:absolute;inset:-30% -10%;z-index:3;pointer-events:none;
-    background:linear-gradient(112deg,transparent 33%,rgba(255,255,255,.04) 42%,
-      rgba(235,248,255,.16) 48%,rgba(250,253,255,.30) 50%,rgba(235,248,255,.16) 52%,
-      rgba(255,255,255,.04) 58%,transparent 67%);
-    mix-blend-mode:screen;transform:translateX(-70%);
-    animation:cardSheen 7s ease-in-out infinite;}
-  @keyframes cardSheen{0%{transform:translateX(-70%);opacity:0;}
-    12%{opacity:1;}58%{transform:translateX(70%);opacity:1;}
-    72%{opacity:0;}100%{transform:translateX(70%);opacity:0;}}
-  /* ===== 背景动态光晕：几团大柔光在页面背后缓缓漂移+呼吸，明显但不抢内容 ===== */
-  body::after{content:"";position:fixed;inset:-30%;z-index:0;pointer-events:none;
+  /* ===== 氤氲光晕 V4：柔雾慢呼吸，慢速、错峰、没有任何锐利扫光 ===== */
+  /* 卡片柔雾光：一团极淡辉光在卡面缓慢呼吸；screen 只提亮不挡字，每张卡错峰，绝不整屏一起亮 */
+  .main>.card::after{content:"";position:absolute;inset:-8%;z-index:3;pointer-events:none;
     background:
-      radial-gradient(42% 38% at 20% 26%,rgba(46,124,192,.38),transparent 70%),
-      radial-gradient(38% 34% at 80% 20%,rgba(216,180,106,.22),transparent 70%),
-      radial-gradient(48% 42% at 68% 80%,rgba(38,116,196,.32),transparent 70%),
-      radial-gradient(36% 34% at 14% 84%,rgba(120,86,206,.26),transparent 70%),
-      radial-gradient(30% 28% at 50% 50%,rgba(40,150,220,.16),transparent 72%);
-    background-size:200% 200%;
-    animation:auroraDrift 26s ease-in-out infinite alternate,
-              auroraBreathe 9s ease-in-out infinite alternate,
-              auroraSpin 60s linear infinite;
-    will-change:background-position,opacity,transform;}
-  @keyframes auroraDrift{0%{background-position:0% 30%,100% 20%,80% 90%,10% 80%,50% 50%;}
-    100%{background-position:24% 58%,76% 42%,52% 66%,30% 58%,48% 44%;}}
-  @keyframes auroraBreathe{0%{opacity:.62;}100%{opacity:1;}}
-  @keyframes auroraSpin{0%{transform:rotate(0deg) scale(1);}
-    100%{transform:rotate(6deg) scale(1.06);}}
+      radial-gradient(56% 50% at 20% 16%,rgba(140,200,255,.16),transparent 72%),
+      radial-gradient(52% 56% at 82% 84%,rgba(222,186,112,.10),transparent 74%);
+    mix-blend-mode:screen;opacity:.4;
+    animation:cardHaze 20s ease-in-out infinite alternate;}
+  @keyframes cardHaze{
+    0%{opacity:.30;transform:translate3d(0,0,0) scale(1);}
+    100%{opacity:.80;transform:translate3d(1.6%,-1.2%,0) scale(1.05);}}
+  /* 每张卡呼吸步调不同，避免所有卡片光线上下同步 */
+  .main>.ask::after{animation-delay:0s;}
+  .main>.hot::after{animation-delay:-2.9s;}
+  .main>.timely::after{animation-delay:-5.7s;}
+  .main>.story::after{animation-delay:-8.6s;}
+  .main>.quiz::after{animation-delay:-11.4s;}
+  .main>.quote::after{animation-delay:-14.3s;}
+  .main>.checkin::after{animation-delay:-17.1s;}
+  /* 大背景氤氲：几团大色块模糊成一整片柔雾，极慢漂移+呼吸，铺满整页背后 */
+  body::after{content:"";position:fixed;inset:-28%;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(40% 44% at 18% 26%,rgba(52,132,208,.44),transparent 74%),
+      radial-gradient(36% 40% at 82% 18%,rgba(220,182,110,.26),transparent 76%),
+      radial-gradient(46% 42% at 74% 80%,rgba(42,126,204,.40),transparent 74%),
+      radial-gradient(38% 42% at 16% 82%,rgba(126,92,210,.32),transparent 76%),
+      radial-gradient(34% 38% at 50% 52%,rgba(50,162,222,.24),transparent 78%);
+    filter:blur(42px);
+    animation:hazeFlow 54s ease-in-out infinite alternate,
+              hazeBreathe 15s ease-in-out infinite alternate;
+    will-change:transform,opacity;}
+  @keyframes hazeFlow{
+    0%{transform:translate3d(-2%,1%,0) scale(1);}
+    50%{transform:translate3d(2%,-2%,0) scale(1.06);}
+    100%{transform:translate3d(-1%,2%,0) scale(1.02);}}
+  @keyframes hazeBreathe{0%{opacity:.66;}100%{opacity:1;}}
   @media (prefers-reduced-motion:reduce){
     .main>.card,.main>.ask,.main>.hot,.main>.timely,.main>.story,.main>.quiz,.main>.quote,.main>.checkin,
     .sec-head .idx,.main>.card::after,body::after,
@@ -760,54 +768,27 @@
   }
 </style>
 <style>
-  /* —— 内页卡片：一条宽幅斜向反光带在玻璃表面缓缓流动 —— */
-  .card,.portrait-card{
-    background-image:
-      linear-gradient(112deg,transparent 28%,rgba(255,255,255,.05) 38%,rgba(230,245,255,.16) 46%,rgba(245,251,255,.42) 50%,rgba(230,245,255,.16) 54%,rgba(255,255,255,.05) 62%,transparent 72%);
-    background-size:300% 100%;
-    background-repeat:no-repeat;}
-  @keyframes glassFlow{
-    0%{background-position:130% 0;}
-    55%{background-position:-30% 0;}
-    100%{background-position:130% 0;}}
-  /* 流动 + 边缘呼吸统一在主卡片规则声明，避免被滚动显现动画覆盖 */
-  .main>.card{animation:glassFlow 7s ease-in-out infinite, edgeGlow 7s ease-in-out infinite;}
-  @keyframes edgeGlow{
-    0%,100%{border-color:rgba(206,232,255,.34);}
-    50%{border-color:rgba(238,248,255,.72);}}
-
-  /* —— 封面：宽幅反光带在面板上流动 + 光晕大幅漂移 —— */
-  .gate{
-    background-image:
-      linear-gradient(112deg,transparent 26%,rgba(255,255,255,.06) 37%,rgba(235,246,255,.20) 46%,rgba(248,252,255,.40) 50%,rgba(235,246,255,.20) 54%,rgba(255,255,255,.06) 63%,transparent 74%),
-      linear-gradient(180deg,rgba(255,255,255,.26),rgba(255,255,255,0) 28%);
-    background-size:300% 100%,100% 100%;
-    background-repeat:no-repeat;
-    animation:gateGlassFlow 9s ease-in-out infinite;}
-  @keyframes gateGlassFlow{
-    0%{background-position:140% 0,0 0;}
-    55%{background-position:-40% 0,0 0;}
-    100%{background-position:140% 0,0 0;}}
-  /* 封面内部光晕大胆漂移，液体般流动 */
-  .gate::after{animation:gateAurora 14s ease-in-out infinite alternate;}
-  @keyframes gateAurora{
-    0%{transform:translateX(-32%) translateY(8px) scale(1);opacity:.7;}
-    100%{transform:translateX(38%) translateY(-10px) scale(1.3);opacity:1;}}
-
-  /* 滚动显现优先级：.in 时重播上浮，同时保留流动（合并动画，避免被覆盖） */
+  /* 大背景：深蓝渐变之上叠一层极淡冷色玻璃反光，背景本身自带液态质感 */
+  body{
+    background:
+      radial-gradient(1200px 620px at 14% -8%,rgba(86,168,236,.20),transparent 68%),
+      radial-gradient(900px 520px at 90% 4%,rgba(226,190,120,.12),transparent 70%),
+      radial-gradient(1000px 700px at 50% 110%,rgba(70,150,220,.16),transparent 70%),
+      linear-gradient(178deg,#04152A,#0A3563 45%,#04152A);}
+  /* 封面柔雾：一团氤氲极慢漂移呼吸，不再有斜向光带 */
+  .gate::after{animation:gateHaze 26s ease-in-out infinite alternate;}
+  @keyframes gateHaze{
+    0%{transform:translate3d(-9%,2%,0) scale(1);opacity:.55;}
+    100%{transform:translate3d(11%,-3%,0) scale(1.16);opacity:1;}}
+  /* 滚动显现只负责一次性上浮淡入；柔雾在 ::after 上，两者互不冲突 */
   .js-reveal .main>.card.in{
-    animation:secRiseIn .68s cubic-bezier(.2,.72,.25,1) forwards,
-              glassFlow 7s ease-in-out infinite .68s,
-              edgeGlow 7s ease-in-out infinite .68s;}
-
-  /* 减少动效：关掉流动，回到静态玻璃 */
+    animation:secRiseIn .68s cubic-bezier(.2,.72,.25,1) forwards;}
   @media (prefers-reduced-motion:reduce){
-    .card,.portrait-card,.gate,.gate::after,.main>.card,.js-reveal .main>.card.in{
-      animation:none!important;}
-    .card,.portrait-card{background-image:none;}
+    .gate::after,.main>.card::after,.js-reveal .main>.card.in{animation:none!important;}
+    .main>.card::after{opacity:.4;}
   }
   @media print{
-    .card,.portrait-card,.gate,.gate::after,.main>.card,.js-reveal .main>.card.in{animation:none!important;}
+    .gate::after,.main>.card::after,.js-reveal .main>.card.in{animation:none!important;}
   }
 </style>
 </head>
