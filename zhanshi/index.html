@@ -481,50 +481,63 @@
   .sec-head .idx{animation:idxBreath 4.2s ease-in-out infinite;}
   @keyframes idxBreath{0%,100%{box-shadow:0 0 0 rgba(216,180,106,0);}
     50%{box-shadow:0 0 12px 1px rgba(216,180,106,.45);}}
-  /* ===== 氤氲光晕 V4：柔雾慢呼吸，慢速、错峰、没有任何锐利扫光 ===== */
-  /* 卡片柔雾光：一团极淡辉光在卡面缓慢呼吸；screen 只提亮不挡字，每张卡错峰，绝不整屏一起亮 */
-  .main>.card::after{content:"";position:absolute;inset:-8%;z-index:3;pointer-events:none;
+  /* ===== 液态玻璃高级感 + 一条贯穿全页的柔光（V5）===== */
+  /* 卡片不再各自动光：::after 只留一层极淡静态玻璃反光，绝无卡片自己的光线 */
+  .main>.card::after{content:"";position:absolute;inset:-6%;z-index:3;pointer-events:none;
     background:
-      radial-gradient(56% 50% at 20% 16%,rgba(140,200,255,.16),transparent 72%),
-      radial-gradient(52% 56% at 82% 84%,rgba(222,186,112,.10),transparent 74%);
-    mix-blend-mode:screen;opacity:.4;
-    animation:cardHaze 20s ease-in-out infinite alternate;}
-  @keyframes cardHaze{
-    0%{opacity:.30;transform:translate3d(0,0,0) scale(1);}
-    100%{opacity:.80;transform:translate3d(1.6%,-1.2%,0) scale(1.05);}}
-  /* 每张卡呼吸步调不同，避免所有卡片光线上下同步 */
-  .main>.ask::after{animation-delay:0s;}
-  .main>.hot::after{animation-delay:-2.9s;}
-  .main>.timely::after{animation-delay:-5.7s;}
-  .main>.story::after{animation-delay:-8.6s;}
-  .main>.quiz::after{animation-delay:-11.4s;}
-  .main>.quote::after{animation-delay:-14.3s;}
-  .main>.checkin::after{animation-delay:-17.1s;}
-  /* 大背景氤氲：几团大色块模糊成一整片柔雾，极慢漂移+呼吸，铺满整页背后 */
+      radial-gradient(120% 70% at 6% 0%,rgba(255,255,255,.05),transparent 46%),
+      linear-gradient(118deg,transparent 40%,rgba(235,246,255,.05) 50%,transparent 60%);
+    mix-blend-mode:screen;opacity:.55;}
+  /* 大背景：几团大色块柔光，几乎察觉不到的极慢呼吸，只提供深度、不晃眼 */
   body::after{content:"";position:fixed;inset:-28%;z-index:0;pointer-events:none;
     background:
-      radial-gradient(40% 44% at 18% 26%,rgba(52,132,208,.44),transparent 74%),
-      radial-gradient(36% 40% at 82% 18%,rgba(220,182,110,.26),transparent 76%),
-      radial-gradient(46% 42% at 74% 80%,rgba(42,126,204,.40),transparent 74%),
-      radial-gradient(38% 42% at 16% 82%,rgba(126,92,210,.32),transparent 76%),
-      radial-gradient(34% 38% at 50% 52%,rgba(50,162,222,.24),transparent 78%);
-    filter:blur(42px);
-    animation:hazeFlow 54s ease-in-out infinite alternate,
-              hazeBreathe 15s ease-in-out infinite alternate;
+      radial-gradient(42% 46% at 18% 26%,rgba(52,132,208,.30),transparent 74%),
+      radial-gradient(38% 42% at 82% 18%,rgba(220,182,110,.17),transparent 76%),
+      radial-gradient(48% 44% at 74% 80%,rgba(42,126,204,.27),transparent 74%),
+      radial-gradient(40% 44% at 16% 82%,rgba(126,92,210,.21),transparent 76%),
+      radial-gradient(36% 40% at 50% 52%,rgba(50,162,222,.16),transparent 78%);
+    filter:blur(48px);
+    animation:hazeFlow 90s ease-in-out infinite alternate,
+              hazeBreathe 40s ease-in-out infinite alternate;
     will-change:transform,opacity;}
   @keyframes hazeFlow{
-    0%{transform:translate3d(-2%,1%,0) scale(1);}
-    50%{transform:translate3d(2%,-2%,0) scale(1.06);}
-    100%{transform:translate3d(-1%,2%,0) scale(1.02);}}
-  @keyframes hazeBreathe{0%{opacity:.66;}100%{opacity:1;}}
+    0%{transform:translate3d(-1%,.5%,0) scale(1);}
+    100%{transform:translate3d(1%,-1%,0) scale(1.03);}}
+  @keyframes hazeBreathe{0%{opacity:.78;}100%{opacity:.94;}}
+  /* 全局唯一一条光线：柔光从上到下缓缓穿过整页，所有卡片被同一条光依次照亮 */
+  .global-sweep{
+    position:fixed;left:0;right:0;top:0;height:56vh;z-index:40;pointer-events:none;
+    background:
+      linear-gradient(180deg,
+        transparent 0%,
+        rgba(160,210,255,.025) 24%,
+        rgba(225,242,255,.090) 44%,
+        rgba(255,251,238,.130) 50%,
+        rgba(225,242,255,.090) 56%,
+        rgba(160,210,255,.025) 76%,
+        transparent 100%),
+      linear-gradient(90deg,
+        transparent 0%,
+        rgba(190,225,255,.050) 18%,
+        rgba(255,246,228,.090) 50%,
+        rgba(190,225,255,.050) 82%,
+        transparent 100%);
+    mix-blend-mode:screen;
+    transform:translate3d(0,-62vh,0);
+    animation:sweepThrough 24s linear infinite;
+    will-change:transform;}
+  @keyframes sweepThrough{
+    0%{transform:translate3d(0,-62vh,0);}
+    100%{transform:translate3d(0,116vh,0);}}
   @media (prefers-reduced-motion:reduce){
     .main>.card,.main>.ask,.main>.hot,.main>.timely,.main>.story,.main>.quiz,.main>.quote,.main>.checkin,
-    .sec-head .idx,.main>.card::after,body::after,
+    .sec-head .idx,body::after,
     .main>.ask::before,.main>.hot::before,.main>.timely::before,.main>.story::before,
     .main>.quiz::before,.main>.quote::before,.main>.checkin::before{animation:none!important;}
-    body::after{opacity:.72;}
+    .global-sweep{animation:none!important;opacity:.35;transform:translate3d(0,30vh,0);}
+    body::after{opacity:.82;}
   }
-  @media print{body::after{display:none!important;}}
+  @media print{body::after,.global-sweep{display:none!important;}}
 
   /* 06 国防知识闯关：尺子式刻度进度 + 一次一题 */
   .quiz{padding:18px 22px 20px;}
@@ -768,31 +781,26 @@
   }
 </style>
 <style>
-  /* 大背景：深蓝渐变之上叠一层极淡冷色玻璃反光，背景本身自带液态质感 */
+  /* 大背景：深蓝渐变之上叠极淡冷/暖玻璃反光，背景本身自带液态质感 */
   body{
     background:
       radial-gradient(1200px 620px at 14% -8%,rgba(86,168,236,.20),transparent 68%),
       radial-gradient(900px 520px at 90% 4%,rgba(226,190,120,.12),transparent 70%),
       radial-gradient(1000px 700px at 50% 110%,rgba(70,150,220,.16),transparent 70%),
       linear-gradient(178deg,#04152A,#0A3563 45%,#04152A);}
-  /* 封面柔雾：一团氤氲极慢漂移呼吸，不再有斜向光带 */
-  .gate::after{animation:gateHaze 26s ease-in-out infinite alternate;}
-  @keyframes gateHaze{
-    0%{transform:translate3d(-9%,2%,0) scale(1);opacity:.55;}
-    100%{transform:translate3d(11%,-3%,0) scale(1.16);opacity:1;}}
-  /* 滚动显现只负责一次性上浮淡入；柔雾在 ::after 上，两者互不冲突 */
+  /* 封面不再单独动光：让那条全局光线自然穿过它 */
   .js-reveal .main>.card.in{
     animation:secRiseIn .68s cubic-bezier(.2,.72,.25,1) forwards;}
   @media (prefers-reduced-motion:reduce){
-    .gate::after,.main>.card::after,.js-reveal .main>.card.in{animation:none!important;}
-    .main>.card::after{opacity:.4;}
+    .js-reveal .main>.card.in{animation:none!important;}
   }
   @media print{
-    .gate::after,.main>.card::after,.js-reveal .main>.card.in{animation:none!important;}
+    .js-reveal .main>.card.in{animation:none!important;}
   }
 </style>
 </head>
 <body>
+<div class="global-sweep" aria-hidden="true"></div>
 <style>
   @media print{#publicBar,#toolDock{display:none!important}}
   #toolDock{position:fixed;left:14px;bottom:16px;right:auto;top:auto;z-index:60;display:flex;gap:6px;}
