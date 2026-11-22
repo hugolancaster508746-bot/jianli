@@ -481,63 +481,12 @@
   .sec-head .idx{animation:idxBreath 4.2s ease-in-out infinite;}
   @keyframes idxBreath{0%,100%{box-shadow:0 0 0 rgba(216,180,106,0);}
     50%{box-shadow:0 0 12px 1px rgba(216,180,106,.45);}}
-  /* ===== 液态玻璃高级感 + 一条贯穿全页的柔光（V5）===== */
-  /* 卡片不再各自动光：::after 只留一层极淡静态玻璃反光，绝无卡片自己的光线 */
-  .main>.card::after{content:"";position:absolute;inset:-6%;z-index:3;pointer-events:none;
-    background:
-      radial-gradient(120% 70% at 6% 0%,rgba(255,255,255,.05),transparent 46%),
-      linear-gradient(118deg,transparent 40%,rgba(235,246,255,.05) 50%,transparent 60%);
-    mix-blend-mode:screen;opacity:.55;}
-  /* 大背景：几团大色块柔光，几乎察觉不到的极慢呼吸，只提供深度、不晃眼 */
-  body::after{content:"";position:fixed;inset:-28%;z-index:0;pointer-events:none;
-    background:
-      radial-gradient(42% 46% at 18% 26%,rgba(52,132,208,.30),transparent 74%),
-      radial-gradient(38% 42% at 82% 18%,rgba(220,182,110,.17),transparent 76%),
-      radial-gradient(48% 44% at 74% 80%,rgba(42,126,204,.27),transparent 74%),
-      radial-gradient(40% 44% at 16% 82%,rgba(126,92,210,.21),transparent 76%),
-      radial-gradient(36% 40% at 50% 52%,rgba(50,162,222,.16),transparent 78%);
-    filter:blur(48px);
-    animation:hazeFlow 90s ease-in-out infinite alternate,
-              hazeBreathe 40s ease-in-out infinite alternate;
-    will-change:transform,opacity;}
-  @keyframes hazeFlow{
-    0%{transform:translate3d(-1%,.5%,0) scale(1);}
-    100%{transform:translate3d(1%,-1%,0) scale(1.03);}}
-  @keyframes hazeBreathe{0%{opacity:.78;}100%{opacity:.94;}}
-  /* 全局唯一一条光线：柔光从上到下缓缓穿过整页，所有卡片被同一条光依次照亮 */
-  .global-sweep{
-    position:fixed;left:0;right:0;top:0;height:56vh;z-index:40;pointer-events:none;
-    background:
-      linear-gradient(180deg,
-        transparent 0%,
-        rgba(160,210,255,.025) 24%,
-        rgba(225,242,255,.090) 44%,
-        rgba(255,251,238,.130) 50%,
-        rgba(225,242,255,.090) 56%,
-        rgba(160,210,255,.025) 76%,
-        transparent 100%),
-      linear-gradient(90deg,
-        transparent 0%,
-        rgba(190,225,255,.050) 18%,
-        rgba(255,246,228,.090) 50%,
-        rgba(190,225,255,.050) 82%,
-        transparent 100%);
-    mix-blend-mode:screen;
-    transform:translate3d(0,-62vh,0);
-    animation:sweepThrough 24s linear infinite;
-    will-change:transform;}
-  @keyframes sweepThrough{
-    0%{transform:translate3d(0,-62vh,0);}
-    100%{transform:translate3d(0,116vh,0);}}
   @media (prefers-reduced-motion:reduce){
     .main>.card,.main>.ask,.main>.hot,.main>.timely,.main>.story,.main>.quiz,.main>.quote,.main>.checkin,
-    .sec-head .idx,body::after,
+    .sec-head .idx,
     .main>.ask::before,.main>.hot::before,.main>.timely::before,.main>.story::before,
     .main>.quiz::before,.main>.quote::before,.main>.checkin::before{animation:none!important;}
-    .global-sweep{animation:none!important;opacity:.35;transform:translate3d(0,30vh,0);}
-    body::after{opacity:.82;}
   }
-  @media print{body::after,.global-sweep{display:none!important;}}
 
   /* 06 国防知识闯关：尺子式刻度进度 + 一次一题 */
   .quiz{padding:18px 22px 20px;}
@@ -733,74 +682,13 @@
   }
 </style>
 <style>
-  /* —— 封面：明显玻璃面板，透出底层渐变与光晕 —— */
-  .gate{
-    background:
-      linear-gradient(118deg,transparent 16%,rgba(255,255,255,.24) 34%,rgba(255,255,255,.05) 47%,transparent 58%),
-      linear-gradient(180deg,rgba(255,255,255,.26),rgba(255,255,255,0) 28%),
-      linear-gradient(160deg,rgba(255,255,255,.13),rgba(255,255,255,.03) 42%,rgba(255,255,255,0) 70%),
-      linear-gradient(155deg,rgba(8,46,87,.66),rgba(12,68,124,.56) 48%,rgba(26,83,145,.68));
-    border:1px solid rgba(228,242,255,.58);
-    -webkit-backdrop-filter:blur(24px) saturate(165%);
-    backdrop-filter:blur(24px) saturate(165%);
-    box-shadow:
-      inset 0 2px 0 rgba(255,255,255,.80),
-      inset 2px 0 0 rgba(255,255,255,.32),
-      inset -2px 0 0 rgba(255,255,255,.32),
-      inset 0 -2px 0 rgba(255,255,255,.18),
-      inset 0 0 72px 8px rgba(150,205,255,.20),
-      0 16px 40px rgba(0,0,0,.32);}
-  /* —— 内页卡片：通透玻璃 + 表面反光 + 四周高光 + 内部冷辉 —— */
-  .card,.portrait-card{
-    background:
-      linear-gradient(118deg,transparent 14%,rgba(255,255,255,.18) 30%,rgba(255,255,255,.04) 44%,transparent 56%),
-      radial-gradient(120% 80% at 8% 0%,rgba(255,255,255,.17),transparent 46%),
-      linear-gradient(160deg,rgba(255,255,255,.10),rgba(255,255,255,.02) 60%,rgba(255,255,255,0)),
-      linear-gradient(160deg,rgba(255,255,255,.05),rgba(255,255,255,.012));
-    border:1px solid rgba(206,232,255,.50);
-    -webkit-backdrop-filter:blur(20px) saturate(160%);
-    backdrop-filter:blur(20px) saturate(160%);
-    box-shadow:
-      inset 0 2px 0 rgba(255,255,255,.64),
-      inset 2px 0 0 rgba(255,255,255,.26),
-      inset -2px 0 0 rgba(255,255,255,.26),
-      inset 0 -2px 0 rgba(255,255,255,.14),
-      inset 0 0 42px 5px rgba(140,200,255,.15),
-      var(--shadow);}
-  /* 顶栏也带一点玻璃折射 */
-  header{
-    -webkit-backdrop-filter:blur(16px) saturate(150%);
-    backdrop-filter:blur(16px) saturate(150%);}
-  @media (max-width:720px){
-    .gate,.card,.portrait-card{
-      -webkit-backdrop-filter:blur(16px) saturate(150%);
-      backdrop-filter:blur(16px) saturate(150%);}}
-  /* 减少动效/打印：玻璃质感保留（静态），打印时关闭保证纸质清晰 */
-  @media print{
-    .gate,.card,.portrait-card{background:#fff!important;box-shadow:none!important;backdrop-filter:none!important;}
-  }
+  /* 液态玻璃高光/折射已按用户要求回退，此处留空。 */
 </style>
 <style>
-  /* 大背景：深蓝渐变之上叠极淡冷/暖玻璃反光，背景本身自带液态质感 */
-  body{
-    background:
-      radial-gradient(1200px 620px at 14% -8%,rgba(86,168,236,.20),transparent 68%),
-      radial-gradient(900px 520px at 90% 4%,rgba(226,190,120,.12),transparent 70%),
-      radial-gradient(1000px 700px at 50% 110%,rgba(70,150,220,.16),transparent 70%),
-      linear-gradient(178deg,#04152A,#0A3563 45%,#04152A);}
-  /* 封面不再单独动光：让那条全局光线自然穿过它 */
-  .js-reveal .main>.card.in{
-    animation:secRiseIn .68s cubic-bezier(.2,.72,.25,1) forwards;}
-  @media (prefers-reduced-motion:reduce){
-    .js-reveal .main>.card.in{animation:none!important;}
-  }
-  @media print{
-    .js-reveal .main>.card.in{animation:none!important;}
-  }
+  /* 扫光/光晕/贯穿光已按用户要求回退，此处留空。 */
 </style>
 </head>
 <body>
-<div class="global-sweep" aria-hidden="true"></div>
 <style>
   @media print{#publicBar,#toolDock{display:none!important}}
   #toolDock{position:fixed;left:14px;bottom:16px;right:auto;top:auto;z-index:60;display:flex;gap:6px;}
